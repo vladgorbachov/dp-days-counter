@@ -35,8 +35,9 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          dist/*.exe
-          updater/dist/*.exe
+          dist/DP-Days-Counter-Setup.exe
+          updater/dist/DP-Days-Counter-Updater.exe
+          dist/DP-Days-Counter-Update.exe
         draft: false
         prerelease: false
         generate_release_notes: true

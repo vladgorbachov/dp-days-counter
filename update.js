@@ -6,7 +6,7 @@ const { exec } = require('child_process');
 const os = require('os');
 
 // GitHub repository configuration
-const GITHUB_REPO = 'your-username/dp-days-counter'; // Replace with your actual GitHub username
+const GITHUB_REPO = 'delion-software/dp-days-counter'; // DeLion Software repository
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
 const GITHUB_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releases/download`;
 
@@ -37,7 +37,7 @@ function fetchLatestVersion() {
                     resolve({
                         version: release.tag_name.replace('v', ''),
                         downloadUrl: release.assets.find(asset => 
-                            asset.name.includes('DP-Days-Counter-Setup') && 
+                            asset.name.includes('DP-Days-Counter-Update') && 
                             asset.name.endsWith('.exe')
                         )?.browser_download_url,
                         releaseNotes: release.body,
@@ -122,36 +122,37 @@ function downloadUpdate(downloadUrl, progressCallback) {
 
 // Install update
 function installUpdate(installerPath) {
-    return new Promise((resolve, reject) => {
-        // Try to use the updater first
-        const updaterPath = path.join(__dirname, 'updater', 'dist', 'win-unpacked', 'DP-Days-Counter-Updater.exe');
-        
-        if (fs.existsSync(updaterPath)) {
-            exec(`"${updaterPath}" "${installerPath}"`, (error) => {
-                if (error) {
-                    // Fallback to direct installer
-                    exec(`"${installerPath}" /S`, (error) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            resolve();
-                        }
-                    });
-                } else {
-                    resolve();
-                }
-            });
+  return new Promise((resolve, reject) => {
+    // Try to use the updater first
+    const updaterPath = path.join(__dirname, 'updater', 'dist', 'win-unpacked', 'DP-Days-Counter-Updater.exe');
+    
+    if (fs.existsSync(updaterPath)) {
+      // Launch updater with installer path
+      exec(`"${updaterPath}" "${installerPath}"`, (error) => {
+        if (error) {
+          // Fallback to direct installer
+          exec(`"${installerPath}" /SILENT /CLOSEAPPLICATIONS`, (error) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve();
+            }
+          });
         } else {
-            // Direct installer fallback
-            exec(`"${installerPath}" /S`, (error) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve();
-                }
-            });
+          resolve();
         }
-    });
+      });
+    } else {
+      // Direct installer fallback
+      exec(`"${installerPath}" /SILENT /CLOSEAPPLICATIONS`, (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    }
+  });
 }
 
 // Create update window

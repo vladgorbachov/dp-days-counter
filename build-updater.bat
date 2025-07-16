@@ -1,5 +1,5 @@
 @echo off
-echo Building DP Hours Counter Updater...
+echo Building DP Days Counter Updater...
 
 cd updater
 
@@ -10,6 +10,6 @@ echo Building updater...
 npm run build:win
 
 echo Updater build complete!
-echo The updater executable is located in: updater\dist\DP-Hours-Counter-Updater.exe
+echo The updater executable is located in: updater\dist\DP-Days-Counter-Updater.exe
 
 pause 

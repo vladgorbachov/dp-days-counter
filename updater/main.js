@@ -1,23 +1,28 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
 const { exec } = require('child_process');
+const os = require('os');
 
 let mainWindow;
+let updateInfo = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 500,
+    width: 600,
     height: 400,
     resizable: false,
-    frame: false,
+    maximizable: false,
+    minimizable: false,
+    fullscreenable: false,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     },
-    show: false,
-    icon: path.join(__dirname, '../src/assets/logo.png'),
-    title: 'DP Hours Counter - Updater'
+    icon: path.join(__dirname, 'assets', 'icon.ico'),
+    title: 'DP Days Counter - Updater'
   });
 
   mainWindow.loadFile(path.join(__dirname, 'updater.html'));
@@ -31,6 +36,112 @@ function createWindow() {
   });
 }
 
+// Get command line arguments
+const args = process.argv.slice(2);
+if (args.length > 0) {
+  updateInfo = {
+    downloadUrl: args[0],
+    version: args[1] || 'Unknown',
+    releaseNotes: args[2] || ''
+  };
+}
+
+// IPC handlers
+ipcMain.handle('get-update-info', () => {
+  return updateInfo;
+});
+
+ipcMain.handle('download-update', async (event, downloadUrl) => {
+  try {
+    const installerPath = await downloadUpdate(downloadUrl, (progress) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('download-progress', progress);
+      }
+    });
+    
+    return installerPath;
+  } catch (error) {
+    throw error;
+  }
+});
+
+ipcMain.handle('install-update', async (event, installerPath) => {
+  try {
+    await installUpdate(installerPath);
+    return true;
+  } catch (error) {
+    throw error;
+  }
+});
+
+ipcMain.handle('close-updater', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.close();
+  }
+});
+
+// Download update function
+function downloadUpdate(downloadUrl, progressCallback) {
+  return new Promise((resolve, reject) => {
+    const tempDir = path.join(os.tmpdir(), 'dp-days-counter-update');
+    const installerPath = path.join(tempDir, 'DP-Days-Counter-Update.exe');
+    
+    // Create temp directory
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    
+    const file = fs.createWriteStream(installerPath);
+    let downloadedBytes = 0;
+    let totalBytes = 0;
+    
+    const request = https.get(downloadUrl, (response) => {
+      totalBytes = parseInt(response.headers['content-length'], 10);
+      
+      response.on('data', (chunk) => {
+        downloadedBytes += chunk.length;
+        const progress = totalBytes > 0 ? (downloadedBytes / totalBytes) * 100 : 0;
+        progressCallback(progress);
+      });
+      
+      response.pipe(file);
+      
+      file.on('finish', () => {
+        file.close();
+        resolve(installerPath);
+      });
+    });
+    
+    request.on('error', (error) => {
+      fs.unlink(installerPath, () => {}); // Delete file on error
+      reject(error);
+    });
+    
+    file.on('error', (error) => {
+      fs.unlink(installerPath, () => {}); // Delete file on error
+      reject(error);
+    });
+  });
+}
+
+// Install update function
+function installUpdate(installerPath) {
+  return new Promise((resolve, reject) => {
+    // Run the update installer silently
+    exec(`"${installerPath}" /SILENT /CLOSEAPPLICATIONS`, (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        // Close the updater after successful installation
+        setTimeout(() => {
+          app.quit();
+        }, 2000);
+        resolve();
+      }
+    });
+  });
+}
+
 // App event handlers
 app.whenReady().then(createWindow);
 
@@ -38,68 +149,8 @@ app.on('window-all-closed', () => {
   app.quit();
 });
 
-// IPC handlers
-ipcMain.handle('close-updater', () => {
-  app.quit();
-});
-
-ipcMain.handle('install-update', async (event, installerPath) => {
-  try {
-    // Проверяем, что файл установщика существует
-    if (!fs.existsSync(installerPath)) {
-      throw new Error('Installer file not found');
-    }
-
-    // Запускаем установщик с параметрами
-    exec(`"${installerPath}" /SILENT /CLOSEAPPLICATIONS /NORESTART`, (error) => {
-      if (error) {
-        console.error('Error installing update:', error);
-        mainWindow.webContents.send('install-error', error.message);
-      } else {
-        // Успешная установка
-        mainWindow.webContents.send('install-success');
-        
-        // Закрываем приложение через 3 секунды
-        setTimeout(() => {
-          app.quit();
-        }, 3000);
-      }
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error in install-update:', error);
-    return { success: false, error: error.message };
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
   }
-});
-
-ipcMain.handle('check-installer', async (event, installerPath) => {
-  try {
-    const exists = fs.existsSync(installerPath);
-    const stats = exists ? fs.statSync(installerPath) : null;
-    
-    return {
-      exists,
-      size: exists ? stats.size : 0,
-      path: installerPath
-    };
-  } catch (error) {
-    return { exists: false, error: error.message };
-  }
-});
-
-// Обработка аргументов командной строки
-const args = process.argv.slice(2);
-let installerPath = null;
-
-for (let i = 0; i < args.length; i++) {
-  if (args[i] === '--installer' && i + 1 < args.length) {
-    installerPath = args[i + 1];
-    break;
-  }
-}
-
-// Передаем путь к установщику в рендерер
-ipcMain.handle('get-installer-path', () => {
-  return installerPath;
 }); 

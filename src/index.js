@@ -442,8 +442,30 @@ closeModalButton.addEventListener('click', closeModal);
 lightThemeButton.addEventListener('click', () => setTheme('light'));
 darkThemeButton.addEventListener('click', () => setTheme('dark'));
 
-checkUpdatesButton.addEventListener('click', () => {
-  ipcRenderer.invoke('open-update-window');
+checkUpdatesButton.addEventListener('click', async () => {
+  try {
+    // Show loading state
+    checkUpdatesButton.textContent = 'Checking...';
+    checkUpdatesButton.disabled = true;
+    
+    // Check for updates
+    const update = await ipcRenderer.invoke('check-updates-manual');
+    
+    if (update) {
+      // Show update window
+      ipcRenderer.invoke('open-update-window');
+    } else {
+      // Show no updates message
+      alert('You are using the latest version!');
+    }
+  } catch (error) {
+    console.error('Error checking for updates:', error);
+    alert('Failed to check for updates. Please try again.');
+  } finally {
+    // Reset button state
+    checkUpdatesButton.textContent = 'Check for Updates';
+    checkUpdatesButton.disabled = false;
+  }
 });
 
 // Initialize app when DOM is loaded

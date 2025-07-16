@@ -36,6 +36,10 @@ rl.question('Enter new version (e.g., 1.0.1): ', (newVersion) => {
             fs.writeFileSync(updaterPackagePath, JSON.stringify(updaterPackageJson, null, 2));
         }
         
+        // Create update package
+        const { createUpdatePackage } = require('./create-update.js');
+        createUpdatePackage(newVersion);
+        
         // Commit changes
         execSync('git add .');
         execSync(`git commit -m "Bump version to ${newVersion}"`);

@@ -1,16 +1,17 @@
 {
-  "name": "dp-hours-counter-updater",
+  "name": "dp-days-counter-updater",
   "version": "1.0.0",
-  "description": "Updater for DP Hours Counter application",
+  "description": "Update installer for DP Days Counter",
   "main": "main.js",
+  "company": "DeLion Software",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
     "build:win": "electron-builder --win"
   },
   "build": {
-    "appId": "com.dp-hours-counter.updater",
-    "productName": "DP Hours Counter Updater",
+    "appId": "com.dp-days-counter.updater",
+    "productName": "DP Days Counter Updater",
     "files": [
       "**/*",
       "!node_modules/**/*"
@@ -20,15 +21,15 @@
     },
     "win": {
       "target": "portable",
-      "icon": "../src/assets/logo.png"
+      "icon": "assets/icon.ico"
     },
     "portable": {
-      "artifactName": "DP-Hours-Counter-Updater.exe"
+      "artifactName": "DP-Days-Counter-Updater.exe"
     }
   },
-  "keywords": ["updater", "electron", "dp-hours-counter"],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["updater", "electron", "dp-days-counter"],
+  "author": "DeLion Software",
+  "license": "MIT",
   "devDependencies": {
     "electron": "^29.0.1",
     "electron-builder": "^24.9.1"
