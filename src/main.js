@@ -2,8 +2,6 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const updateModule = require('../update.js');
-const { AUTO_UPDATE_CONFIG } = require('./config/auto-update.js');
-const userPreferences = require('./config/user-preferences.js');
 
 let mainWindow;
 
@@ -48,18 +46,14 @@ app.whenReady().then(() => {
   createWindow();
   
   // Start auto-update system
-  if (AUTO_UPDATE_CONFIG.CHECK_ON_STARTUP) {
-    setTimeout(() => {
-      checkForUpdatesSilently();
-    }, AUTO_UPDATE_CONFIG.STARTUP_DELAY);
-  }
+  setTimeout(() => {
+    checkForUpdatesSilently();
+  }, 5000); // Check after 5 seconds
   
-  // Set up periodic update checks
+  // Set up periodic update checks (every 24 hours)
   setInterval(() => {
-    if (userPreferences.shouldCheckForUpdates()) {
-      checkForUpdatesSilently();
-    }
-  }, AUTO_UPDATE_CONFIG.PERIODIC_CHECK_INTERVAL);
+    checkForUpdatesSilently();
+  }, 24 * 60 * 60 * 1000);
 });
 
 app.on('window-all-closed', () => {
@@ -161,43 +155,26 @@ ipcMain.handle('open-update-window', () => {
 // Auto-update functions
 async function checkForUpdatesSilently() {
   try {
-    // Update last check time
-    userPreferences.updateLastCheckTime();
-    
     const update = await updateModule.checkForUpdates();
     
     if (update) {
-      // Check if user has skipped this version
-      if (userPreferences.isVersionSkipped(update.version)) {
-        return;
-      }
-      
-      // Check user preferences for notifications
-      const preferences = userPreferences.loadUserPreferences();
-      if (!preferences.notificationEnabled) {
-        return;
-      }
-      
       // Show notification to user
       const result = await dialog.showMessageBox(mainWindow, {
         type: 'info',
         title: 'Update Available',
         message: `A new version (${update.version}) is available!`,
         detail: 'Would you like to download and install the update now?',
-        buttons: ['Yes', 'Later', 'Skip This Version', 'View Details'],
+        buttons: ['Yes', 'Later', 'View Details'],
         defaultId: 0,
         cancelId: 1
       });
       
       switch (result.response) {
         case 0: // Yes
-          updateModule.createUpdateWindow();
+          ipcRenderer.invoke('check-updates-manual');
           break;
-        case 2: // Skip This Version
-          userPreferences.skipVersion(update.version);
-          break;
-        case 3: // View Details
-          require('electron').shell.openExternal(`https://github.com/delion-software/dp-days-counter/releases`);
+        case 2: // View Details
+          require('electron').shell.openExternal(`https://github.com/REAL_USERNAME/dp-days-counter/releases`);
           break;
         // Case 1 (Later) - do nothing
       }
@@ -211,26 +188,34 @@ async function checkForUpdatesSilently() {
 ipcMain.handle('check-updates-manual', async () => {
   try {
     const update = await updateModule.checkForUpdates();
+    if (update) {
+      const action = await updateModule.showUpdateDialog(update);
+      if (action === 'install') {
+        await updateModule.showDownloadProgress();
+        const installerPath = await updateModule.downloadUpdate(update.downloadUrl, (progress) => {
+          // Progress will be handled by the dialog
+        });
+        await updateModule.installUpdate(installerPath);
+        dialog.showMessageBox({
+          type: 'info',
+          title: 'Update Complete',
+          message: 'Update has been installed successfully. The application will restart.',
+          buttons: ['OK']
+        });
+        app.relaunch();
+        app.exit();
+      }
+    } else {
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'No Updates',
+        message: 'You are using the latest version!',
+        buttons: ['OK']
+      });
+    }
     return update;
   } catch (error) {
-    console.error('Error checking for updates manually:', error);
+    dialog.showErrorBox('Update Error', error.message);
     return null;
   }
-});
-
-// User preferences handlers
-ipcMain.handle('get-update-preferences', () => {
-  return userPreferences.loadUserPreferences();
-});
-
-ipcMain.handle('update-preference', async (event, key, value) => {
-  return userPreferences.updatePreference(key, value);
-});
-
-ipcMain.handle('skip-version', async (event, version) => {
-  userPreferences.skipVersion(version);
-});
-
-ipcMain.handle('unskip-version', async (event, version) => {
-  userPreferences.unskipVersion(version);
 }); 

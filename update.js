@@ -1,14 +1,13 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const { exec } = require('child_process');
 const os = require('os');
 
-// GitHub repository configuration
-const GITHUB_REPO = 'delion-software/dp-days-counter'; // DeLion Software repository
+// GitHub repository configuration - БУДЕТ ИЗМЕНЕНО НА РЕАЛЬНЫЙ РЕПОЗИТОРИЙ
+const GITHUB_REPO = 'REAL_USERNAME/dp-days-counter'; // ЗАМЕНИТЬ НА РЕАЛЬНЫЙ
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
-const GITHUB_DOWNLOAD_URL = `https://github.com/${GITHUB_REPO}/releases/download`;
 
 let updateWindow = null;
 
@@ -80,7 +79,7 @@ function compareVersions(current, latest) {
 function downloadUpdate(downloadUrl, progressCallback) {
     return new Promise((resolve, reject) => {
         const tempDir = path.join(os.tmpdir(), 'dp-days-counter-update');
-        const installerPath = path.join(tempDir, 'DP-Days-Counter-Setup.exe');
+        const installerPath = path.join(tempDir, 'DP-Days-Counter-Update.exe');
         
         // Create temp directory
         if (!fs.existsSync(tempDir)) {
@@ -122,70 +121,102 @@ function downloadUpdate(downloadUrl, progressCallback) {
 
 // Install update
 function installUpdate(installerPath) {
-  return new Promise((resolve, reject) => {
-    // Try to use the updater first
-    const updaterPath = path.join(__dirname, 'updater', 'dist', 'win-unpacked', 'DP-Days-Counter-Updater.exe');
-    
-    if (fs.existsSync(updaterPath)) {
-      // Launch updater with installer path
-      exec(`"${updaterPath}" "${installerPath}"`, (error) => {
-        if (error) {
-          // Fallback to direct installer
-          exec(`"${installerPath}" /SILENT /CLOSEAPPLICATIONS`, (error) => {
+    return new Promise((resolve, reject) => {
+        // Run the update installer silently
+        exec(`"${installerPath}" /SILENT /CLOSEAPPLICATIONS`, (error) => {
             if (error) {
-              reject(error);
+                reject(error);
             } else {
-              resolve();
+                resolve();
             }
-          });
-        } else {
-          resolve();
-        }
-      });
-    } else {
-      // Direct installer fallback
-      exec(`"${installerPath}" /SILENT /CLOSEAPPLICATIONS`, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
-    }
-  });
+        });
+    });
 }
 
-// Create update window
-function createUpdateWindow() {
-    if (updateWindow) {
-        updateWindow.focus();
-        return;
+// Show update dialog
+async function showUpdateDialog(updateInfo) {
+    const result = await dialog.showMessageBox({
+        type: 'info',
+        title: 'Update Available',
+        message: `A new version (${updateInfo.version}) is available!`,
+        detail: 'Would you like to download and install the update now?',
+        buttons: ['Yes', 'Later', 'View Details'],
+        defaultId: 0,
+        cancelId: 1
+    });
+    
+    switch (result.response) {
+        case 0: // Yes
+            return 'install';
+        case 2: // View Details
+            shell.openExternal(`https://github.com/${GITHUB_REPO}/releases`);
+            return 'view';
+        default: // Later
+            return 'later';
     }
-    
-    updateWindow = new BrowserWindow({
-        width: 500,
-        height: 400,
-        resizable: false,
-        maximizable: false,
-        minimizable: false,
-        fullscreenable: false,
-        show: false,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false
-        },
-        icon: path.join(__dirname, 'src', 'assets', 'icon.ico'),
-        title: 'DP Days Counter - Update'
-    });
-    
-    updateWindow.loadFile(path.join(__dirname, 'src', 'update.html'));
-    
-    updateWindow.once('ready-to-show', () => {
-        updateWindow.show();
-    });
-    
-    updateWindow.on('closed', () => {
-        updateWindow = null;
+}
+
+// Show download progress dialog
+async function showDownloadProgress() {
+    return new Promise((resolve) => {
+        const progressDialog = new BrowserWindow({
+            width: 400,
+            height: 150,
+            resizable: false,
+            maximizable: false,
+            minimizable: false,
+            fullscreenable: false,
+            show: false,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            },
+            title: 'Downloading Update'
+        });
+        
+        progressDialog.loadURL(`data:text/html,
+            <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+                        .progress { width: 100%; height: 20px; background: #f0f0f0; border-radius: 10px; overflow: hidden; }
+                        .progress-bar { height: 100%; background: #007acc; width: 0%; transition: width 0.3s; }
+                    </style>
+                </head>
+                <body>
+                    <h3>Downloading Update...</h3>
+                    <div class="progress">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+                    <p id="progress-text">0%</p>
+                </body>
+            </html>
+        `);
+        
+        progressDialog.once('ready-to-show', () => {
+            progressDialog.show();
+        });
+        
+        // Handle progress updates
+        ipcMain.handle('update-progress', (event, progress) => {
+            progressDialog.webContents.executeJavaScript(`
+                document.getElementById('progress-bar').style.width = '${progress}%';
+                document.getElementById('progress-text').textContent = '${Math.round(progress)}%';
+            `);
+        });
+        
+        // Handle completion
+        ipcMain.handle('download-complete', () => {
+            progressDialog.close();
+            resolve();
+        });
+        
+        // Handle error
+        ipcMain.handle('download-error', (event, error) => {
+            progressDialog.close();
+            dialog.showErrorBox('Download Error', error);
+            resolve();
+        });
     });
 }
 
@@ -196,7 +227,7 @@ ipcMain.handle('check-for-updates', async () => {
         const latestRelease = await fetchLatestVersion();
         
         if (!latestRelease.downloadUrl) {
-            throw new Error('No installer found in latest release');
+            throw new Error('No update installer found in latest release');
         }
         
         const hasUpdate = compareVersions(currentVersion, latestRelease.version) < 0;
@@ -237,13 +268,38 @@ ipcMain.handle('install-update', async (event, installerPath) => {
     }
 });
 
-ipcMain.handle('open-update-window', () => {
-    createUpdateWindow();
-});
-
-ipcMain.handle('close-update-window', () => {
-    if (updateWindow && !updateWindow.isDestroyed()) {
-        updateWindow.close();
+ipcMain.handle('check-updates-manual', async () => {
+    try {
+        const update = await checkForUpdates();
+        if (update) {
+            const action = await showUpdateDialog(update);
+            if (action === 'install') {
+                await showDownloadProgress();
+                const installerPath = await downloadUpdate(update.downloadUrl, (progress) => {
+                    // Progress will be handled by the dialog
+                });
+                await installUpdate(installerPath);
+                dialog.showMessageBox({
+                    type: 'info',
+                    title: 'Update Complete',
+                    message: 'Update has been installed successfully. The application will restart.',
+                    buttons: ['OK']
+                });
+                app.relaunch();
+                app.exit();
+            }
+        } else {
+            dialog.showMessageBox({
+                type: 'info',
+                title: 'No Updates',
+                message: 'You are using the latest version!',
+                buttons: ['OK']
+            });
+        }
+        return update;
+    } catch (error) {
+        dialog.showErrorBox('Update Error', error.message);
+        return null;
     }
 });
 
@@ -252,7 +308,6 @@ ipcMain.handle('open-github-releases', () => {
 });
 
 module.exports = {
-    createUpdateWindow,
     checkForUpdates: async () => {
         try {
             const currentVersion = getCurrentVersion();
