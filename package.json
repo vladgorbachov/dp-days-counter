@@ -1,0 +1,68 @@
+{
+  "name": "dp-days-counter",
+  "version": "1.0.0",
+  "description": "Application for tracking Dynamic Positioning hours",
+  "main": "src/main.js",
+  "homepage": "https://github.com/your-username/dp-days-counter",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/dp-days-counter.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build-updater": "cd updater && npm run build:win",
+    "build-all": "npm run build:win && npm run build-updater",
+    "release": "node scripts/release.js",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "com.dp-days-counter",
+    "productName": "DP Days Counter",
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json",
+      "update.js",
+      "updater/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "src/assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DP Days Counter"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "your-username",
+      "repo": "dp-days-counter"
+    }
+  },
+  "keywords": ["electron", "dp", "vessel", "tracking", "desktop"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^29.0.1",
+    "electron-builder": "^24.9.1",
+    "electron-reload": "^2.0.0-alpha.1",
+    "wait-on": "^7.2.0"
+  }
+} 

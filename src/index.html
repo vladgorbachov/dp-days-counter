@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DP Hours Counter</title>
+  <link rel="stylesheet" href="./styles/main.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="icon" href="./assets/logo.png">
+</head>
+<body>
+  <div id="app">
+    <div class="title-bar">
+      <div class="title-bar-controls">
+        <div class="app-title">
+          <img src="./assets/logo.png" alt="" class="app-logo">
+          <span>DP HOURS COUNTER</span>
+        </div>
+        <div class="window-controls">
+          <button id="minimizeBtn" class="window-control">
+            <span class="material-icons">minimize</span>
+          </button>
+          <button id="maximizeBtn" class="window-control">
+            <span class="material-icons">crop_square</span>
+          </button>
+          <button id="closeBtn" class="window-control">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-container">
+      <div class="sidebar-trigger"></div>
+      
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h3>Settings</h3>
+        </div>
+        <div class="sidebar-content">
+          <div class="setting-group">
+            <h4>Theme</h4>
+            <div class="theme-selector">
+              <button id="lightThemeBtn" class="theme-btn">Light</button>
+              <button id="darkThemeBtn" class="theme-btn active">Dark</button>
+            </div>
+          </div>
+          
+          <div class="setting-group">
+            <h4>Updates</h4>
+            <button id="checkUpdatesBtn" class="settings-btn">Check for Updates</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="calendar-container">
+          <div class="calendar-header">
+            <button id="prevMonth" class="month-nav-btn">
+              <span class="material-icons">chevron_left</span>
+            </button>
+            <h2 id="currentMonth">Month Year</h2>
+            <button id="nextMonth" class="month-nav-btn">
+              <span class="material-icons">chevron_right</span>
+            </button>
+          </div>
+          <div class="calendar-weekdays">
+            <div>Sun</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+          </div>
+          <div id="calendar" class="calendar-grid"></div>
+          
+          <div class="stats-footer">
+            <div class="stats-container">
+              <div class="stat-item">
+                <span class="stat-label">Month Hours</span>
+                <span class="stat-value" id="monthHours">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Month Days</span>
+                <span class="stat-value" id="monthDays">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Selected Hours</span>
+                <span class="stat-value" id="selectedHours">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Selected Days</span>
+                <span class="stat-value" id="selectedDays">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for DP Hours Input -->
+    <div id="hoursInputModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Enter DP Hours</h3>
+          <span id="closeModal" class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="date-display" id="selectedDate"></div>
+          <div class="input-group">
+            <label for="dpHoursInput">Hours (0-24):</label>
+            <div class="hours-input-container">
+              <button id="decreaseHours" class="input-arrow">
+                <span class="material-icons">remove</span>
+              </button>
+              <input type="number" id="dpHoursInput" min="0" max="24" value="0">
+              <button id="increaseHours" class="input-arrow">
+                <span class="material-icons">add</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="saveHoursBtn" class="btn primary">Save</button>
+          <button id="cancelHoursBtn" class="btn secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./index.js"></script>
+</body>
+</html> 

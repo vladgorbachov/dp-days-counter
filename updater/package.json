@@ -1,0 +1,36 @@
+{
+  "name": "dp-hours-counter-updater",
+  "version": "1.0.0",
+  "description": "Updater for DP Hours Counter application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.dp-hours-counter.updater",
+    "productName": "DP Hours Counter Updater",
+    "files": [
+      "**/*",
+      "!node_modules/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "../src/assets/logo.png"
+    },
+    "portable": {
+      "artifactName": "DP-Hours-Counter-Updater.exe"
+    }
+  },
+  "keywords": ["updater", "electron", "dp-hours-counter"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^29.0.1",
+    "electron-builder": "^24.9.1"
+  }
+} 

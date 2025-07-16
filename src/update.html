@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DP Hours Counter - Update</title>
+  <link rel="stylesheet" href="./styles/update.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <div class="update-container">
+    <div class="update-header">
+      <div class="app-title">
+        <img src="./assets/logo.png" alt="" class="app-logo">
+        <span>DP HOURS COUNTER</span>
+      </div>
+      <button id="closeBtn" class="close-btn">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="update-content">
+      <div id="checkingState" class="update-state">
+        <div class="loading-spinner"></div>
+        <h3>Checking for updates...</h3>
+        <p>Please wait while we check for the latest version.</p>
+      </div>
+
+      <div id="updateAvailableState" class="update-state" style="display: none;">
+        <div class="update-icon">
+          <span class="material-icons">system_update</span>
+        </div>
+        <h3>Update Available!</h3>
+        <div class="version-info">
+          <p><strong>Current Version:</strong> <span id="currentVersion">1.0.0</span></p>
+          <p><strong>Latest Version:</strong> <span id="latestVersion">1.1.0</span></p>
+        </div>
+        <div class="update-actions">
+          <button id="downloadBtn" class="btn primary">Download Update</button>
+          <button id="skipBtn" class="btn secondary">Skip This Version</button>
+        </div>
+      </div>
+
+      <div id="downloadingState" class="update-state" style="display: none;">
+        <div class="update-icon">
+          <span class="material-icons">cloud_download</span>
+        </div>
+        <h3>Downloading Update...</h3>
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+          <div id="progressText" class="progress-text">0%</div>
+        </div>
+        <p>Please wait while the update is being downloaded.</p>
+      </div>
+
+      <div id="installingState" class="update-state" style="display: none;">
+        <div class="update-icon">
+          <span class="material-icons">install_desktop</span>
+        </div>
+        <h3>Installing Update...</h3>
+        <p>The application will restart automatically after installation.</p>
+      </div>
+
+      <div id="noUpdateState" class="update-state" style="display: none;">
+        <div class="update-icon">
+          <span class="material-icons">check_circle</span>
+        </div>
+        <h3>Up to Date!</h3>
+        <p>You are using the latest version of DP Hours Counter.</p>
+        <button id="closeUpdateBtn" class="btn primary">Close</button>
+      </div>
+
+      <div id="errorState" class="update-state" style="display: none;">
+        <div class="update-icon error">
+          <span class="material-icons">error</span>
+        </div>
+        <h3>Update Error</h3>
+        <p id="errorMessage">An error occurred while checking for updates.</p>
+        <button id="retryBtn" class="btn primary">Retry</button>
+        <button id="closeErrorBtn" class="btn secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./update.js"></script>
+</body>
+</html> 
