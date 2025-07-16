@@ -5,8 +5,8 @@ const https = require('https');
 const { exec } = require('child_process');
 const os = require('os');
 
-// GitHub repository configuration - БУДЕТ ИЗМЕНЕНО НА РЕАЛЬНЫЙ РЕПОЗИТОРИЙ
-const GITHUB_REPO = 'REAL_USERNAME/dp-days-counter'; // ЗАМЕНИТЬ НА РЕАЛЬНЫЙ
+// GitHub repository configuration
+const GITHUB_REPO = 'vladgorbachov/dp-days-counter';
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
 
 let updateWindow = null;
@@ -33,13 +33,20 @@ function fetchLatestVersion() {
             response.on('end', () => {
                 try {
                     const release = JSON.parse(data);
+                    
+                    // Check if release data is valid
+                    if (!release || !release.tag_name) {
+                        reject(new Error('Invalid release data received from GitHub'));
+                        return;
+                    }
+                    
                     resolve({
                         version: release.tag_name.replace('v', ''),
-                        downloadUrl: release.assets.find(asset => 
+                        downloadUrl: release.assets?.find(asset => 
                             asset.name.includes('DP-Days-Counter-Update') && 
                             asset.name.endsWith('.exe')
                         )?.browser_download_url,
-                        releaseNotes: release.body,
+                        releaseNotes: release.body || '',
                         publishedAt: release.published_at
                     });
                 } catch (error) {

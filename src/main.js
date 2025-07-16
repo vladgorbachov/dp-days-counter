@@ -171,7 +171,25 @@ async function checkForUpdatesSilently() {
       
       switch (result.response) {
         case 0: // Yes
-          ipcRenderer.invoke('check-updates-manual');
+          const updateResult = await updateModule.checkForUpdates();
+          if (updateResult) {
+            const action = await updateModule.showUpdateDialog(updateResult);
+            if (action === 'install') {
+              await updateModule.showDownloadProgress();
+              const installerPath = await updateModule.downloadUpdate(updateResult.downloadUrl, (progress) => {
+                // Progress will be handled by the dialog
+              });
+              await updateModule.installUpdate(installerPath);
+              dialog.showMessageBox({
+                type: 'info',
+                title: 'Update Complete',
+                message: 'Update has been installed successfully. The application will restart.',
+                buttons: ['OK']
+              });
+              app.relaunch();
+              app.exit();
+            }
+          }
           break;
         case 2: // View Details
           require('electron').shell.openExternal(`https://github.com/REAL_USERNAME/dp-days-counter/releases`);
@@ -184,38 +202,4 @@ async function checkForUpdatesSilently() {
   }
 }
 
-// Manual update check handler
-ipcMain.handle('check-updates-manual', async () => {
-  try {
-    const update = await updateModule.checkForUpdates();
-    if (update) {
-      const action = await updateModule.showUpdateDialog(update);
-      if (action === 'install') {
-        await updateModule.showDownloadProgress();
-        const installerPath = await updateModule.downloadUpdate(update.downloadUrl, (progress) => {
-          // Progress will be handled by the dialog
-        });
-        await updateModule.installUpdate(installerPath);
-        dialog.showMessageBox({
-          type: 'info',
-          title: 'Update Complete',
-          message: 'Update has been installed successfully. The application will restart.',
-          buttons: ['OK']
-        });
-        app.relaunch();
-        app.exit();
-      }
-    } else {
-      dialog.showMessageBox({
-        type: 'info',
-        title: 'No Updates',
-        message: 'You are using the latest version!',
-        buttons: ['OK']
-      });
-    }
-    return update;
-  } catch (error) {
-    dialog.showErrorBox('Update Error', error.message);
-    return null;
-  }
-}); 
+ 
