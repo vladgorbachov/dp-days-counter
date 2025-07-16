@@ -1,0 +1,50 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build:win
+      
+    - name: Create update package
+      run: |
+        mkdir dist\update-files
+        xcopy src\* dist\update-files\ /E /I /Y
+        echo @echo off > dist\DP-Days-Counter-Update.exe
+        echo echo Installing DP Days Counter Update... >> dist\DP-Days-Counter-Update.exe
+        echo taskkill /f /im "DP Days Counter.exe" ^>nul 2^>^&1 >> dist\DP-Days-Counter-Update.exe
+        echo timeout /t 2 /nobreak ^>nul >> dist\DP-Days-Counter-Update.exe
+        echo xcopy "update-files\*" "%%APPDATA%%\DP-Days-Counter\" /E /Y /Q >> dist\DP-Days-Counter-Update.exe
+        echo start "" "%%APPDATA%%\DP-Days-Counter\DP Days Counter.exe" >> dist\DP-Days-Counter-Update.exe
+        echo exit >> dist\DP-Days-Counter-Update.exe
+      
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/DP-Days-Counter-Setup.exe
+          dist/DP-Days-Counter-Update.exe
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
