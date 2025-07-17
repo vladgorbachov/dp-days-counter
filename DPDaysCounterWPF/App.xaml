@@ -1,0 +1,432 @@
+<Application x:Class="DPDaysCounterWPF.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:DPDaysCounterWPF"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Converters -->
+            <local:HoursConverter x:Key="HoursConverter"/>
+            
+            <!-- Dark Theme Colors (точные значения из оригинала) -->
+            <Color x:Key="DarkBackground">#121212</Color>
+            <Color x:Key="DarkSurface">#282828</Color>
+            <Color x:Key="DarkPrimary">#4E4E4E</Color>
+            <Color x:Key="DarkPrimaryVariant">#666666</Color>
+            <Color x:Key="DarkSecondary">#757575</Color>
+            <Color x:Key="DarkTextPrimary">#F2FFFFFF</Color>
+            <Color x:Key="DarkTextSecondary">#B3FFFFFF</Color>
+            <Color x:Key="DarkError">#FF5252</Color>
+            <Color x:Key="DarkCard">#1E1E1E</Color>
+            <Color x:Key="DarkBorder">#404040</Color>
+            <Color x:Key="DarkHoursColor">#22C55E</Color>
+
+            <!-- Light Theme Colors -->
+            <Color x:Key="LightBackground">#DCD9D1</Color>
+            <Color x:Key="LightSurface">#FDF8F0</Color>
+            <Color x:Key="LightPrimary">#D4A574</Color>
+            <Color x:Key="LightPrimaryVariant">#B8860B</Color>
+            <Color x:Key="LightSecondary">#CD853F</Color>
+            <Color x:Key="LightTextPrimary">#FFFFFF</Color>
+            <Color x:Key="LightTextSecondary">#8D6E63</Color>
+            <Color x:Key="LightError">#D32F2F</Color>
+            <Color x:Key="LightCard">#F8F4E6</Color>
+            <Color x:Key="LightBorder">#D7CCC8</Color>
+            <Color x:Key="LightHoursColor">#22C55E</Color>
+            <Color x:Key="SaveButtonColor">#10B981</Color>
+            <Color x:Key="CancelButtonColor">#EF4444</Color>
+            <Color x:Key="LightHeaderBackground">#E8DCC0</Color>
+            <Color x:Key="LightStatsBackground">#CD853F</Color>
+            <Color x:Key="LightStatsText">#000000</Color>
+
+            <!-- Theme Brushes -->
+            <!-- Dark Theme Brushes -->
+            <SolidColorBrush x:Key="DarkBackgroundBrush" Color="{StaticResource DarkBackground}"/>
+            <SolidColorBrush x:Key="DarkSurfaceBrush" Color="{StaticResource DarkSurface}"/>
+            <SolidColorBrush x:Key="DarkPrimaryBrush" Color="{StaticResource DarkPrimary}"/>
+            <SolidColorBrush x:Key="DarkPrimaryVariantBrush" Color="{StaticResource DarkPrimaryVariant}"/>
+            <SolidColorBrush x:Key="DarkSecondaryBrush" Color="{StaticResource DarkSecondary}"/>
+            <SolidColorBrush x:Key="DarkTextPrimaryBrush" Color="{StaticResource DarkTextPrimary}"/>
+            <SolidColorBrush x:Key="DarkTextSecondaryBrush" Color="{StaticResource DarkTextSecondary}"/>
+            <SolidColorBrush x:Key="DarkErrorBrush" Color="{StaticResource DarkError}"/>
+            <SolidColorBrush x:Key="DarkCardBrush" Color="{StaticResource DarkCard}"/>
+            <SolidColorBrush x:Key="DarkBorderBrush" Color="{StaticResource DarkBorder}"/>
+            <SolidColorBrush x:Key="DarkHoursBrush" Color="{StaticResource DarkHoursColor}"/>
+            
+            <!-- Light Theme Brushes -->
+            <SolidColorBrush x:Key="LightBackgroundBrush" Color="{StaticResource LightBackground}"/>
+            <SolidColorBrush x:Key="LightSurfaceBrush" Color="{StaticResource LightSurface}"/>
+            <SolidColorBrush x:Key="LightPrimaryBrush" Color="{StaticResource LightPrimary}"/>
+            <SolidColorBrush x:Key="LightPrimaryVariantBrush" Color="{StaticResource LightPrimaryVariant}"/>
+            <SolidColorBrush x:Key="LightSecondaryBrush" Color="{StaticResource LightSecondary}"/>
+            <SolidColorBrush x:Key="LightTextPrimaryBrush" Color="{StaticResource LightTextPrimary}"/>
+            <SolidColorBrush x:Key="LightTextSecondaryBrush" Color="{StaticResource LightTextSecondary}"/>
+            <SolidColorBrush x:Key="LightErrorBrush" Color="{StaticResource LightError}"/>
+            <SolidColorBrush x:Key="LightCardBrush" Color="{StaticResource LightCard}"/>
+            <SolidColorBrush x:Key="LightBorderBrush" Color="{StaticResource LightBorder}"/>
+            <SolidColorBrush x:Key="LightHoursBrush" Color="{StaticResource LightHoursColor}"/>
+            <SolidColorBrush x:Key="SaveButtonBrush" Color="{StaticResource SaveButtonColor}"/>
+            <SolidColorBrush x:Key="CancelButtonBrush" Color="{StaticResource CancelButtonColor}"/>
+            <SolidColorBrush x:Key="LightHeaderBackgroundBrush" Color="{StaticResource LightHeaderBackground}"/>
+            <SolidColorBrush x:Key="LightStatsBackgroundBrush" Color="{StaticResource LightStatsBackground}"/>
+            <SolidColorBrush x:Key="LightStatsTextBrush" Color="{StaticResource LightStatsText}"/>
+
+            <!-- Current Theme Brushes (Default to Dark) -->
+            <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource DarkBackground}"/>
+            <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource DarkSurface}"/>
+            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource DarkPrimary}"/>
+            <SolidColorBrush x:Key="PrimaryVariantBrush" Color="{StaticResource DarkPrimaryVariant}"/>
+            <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource DarkSecondary}"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource DarkTextPrimary}"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource DarkTextSecondary}"/>
+            <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource DarkError}"/>
+            <SolidColorBrush x:Key="CardBrush" Color="{StaticResource DarkCard}"/>
+            <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource DarkBorder}"/>
+            <SolidColorBrush x:Key="HoursBrush" Color="{StaticResource DarkHoursColor}"/>
+            <SolidColorBrush x:Key="HeaderBackgroundBrush" Color="#26000000"/>
+            <SolidColorBrush x:Key="StatsBackgroundBrush" Color="#991E1E1E"/>
+            <SolidColorBrush x:Key="StatsTextBrush" Color="White"/>
+
+            <!-- Glassmorphism Background для карточек -->
+            <LinearGradientBrush x:Key="CardBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#33FFFFFF" Offset="0"/>
+                <GradientStop Color="#19FFFFFF" Offset="1"/>
+            </LinearGradientBrush>
+
+            <!-- Window Style -->
+            <Style x:Key="WindowStyle" TargetType="Window">
+                <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                <Setter Property="FontFamily" Value="Segoe UI"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="WindowStyle" Value="None"/>
+                <Setter Property="AllowsTransparency" Value="True"/>
+                <Setter Property="ResizeMode" Value="CanResize"/>
+            </Style>
+
+            <!-- Dark Theme Button Style -->
+            <Style x:Key="DarkModernButtonStyle" TargetType="Button">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#1A1A1A" Offset="0"/>
+                            <GradientStop Color="#2C2C2C" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="12,12"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="MinHeight" Value="40"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" 
+                                    Background="{TemplateBinding Background}" 
+                                    CornerRadius="12"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="10" ShadowDepth="5" Color="Black" Opacity="0.3"/>
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="RenderTransform">
+                                        <Setter.Value>
+                                            <TranslateTransform Y="-3"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="RenderTransform">
+                                        <Setter.Value>
+                                            <TranslateTransform Y="0"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Light Theme Button Style -->
+            <Style x:Key="LightModernButtonStyle" TargetType="Button">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#E8DCC0" Offset="0"/>
+                            <GradientStop Color="#D4C4A8" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Foreground" Value="#5D4037"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="12,12"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="MinHeight" Value="40"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" 
+                                    Background="{TemplateBinding Background}" 
+                                    CornerRadius="12"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="10" ShadowDepth="5" Color="Black" Opacity="0.1"/>
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="RenderTransform">
+                                        <Setter.Value>
+                                            <TranslateTransform Y="-3"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="RenderTransform">
+                                        <Setter.Value>
+                                            <TranslateTransform Y="0"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Modern Button Style (Dynamic) -->
+            <Style x:Key="ModernButtonStyle" TargetType="Button" BasedOn="{StaticResource DarkModernButtonStyle}"/>
+
+            <!-- Theme Button Style -->
+            <Style x:Key="ThemeButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+                <Setter Property="MinWidth" Value="80"/>
+                <Setter Property="Height" Value="40"/>
+            </Style>
+
+            <!-- Dark Calendar Day Style -->
+            <Style x:Key="DarkCalendarDayStyle" TargetType="Button">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <SolidColorBrush Color="#404040"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="BorderThickness" Value="0.6"/>
+                <Setter Property="BorderBrush">
+                    <Setter.Value>
+                        <SolidColorBrush Color="#505050"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Width" Value="130"/>
+                <Setter Property="Height" Value="55"/>
+                <Setter Property="Margin" Value="12"/>
+                <Setter Property="FontSize" Value="21"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" 
+                                    Background="{TemplateBinding Background}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    CornerRadius="12">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="5" ShadowDepth="2" Color="Black" Opacity="0.1"/>
+                                </Border.Effect>
+                                <Grid>
+                                    <TextBlock x:Name="DayNumber" 
+                                             Text="{TemplateBinding Content}"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             FontSize="18"
+                                             FontWeight="Medium"/>
+                                    <TextBlock x:Name="HoursText"
+                                             HorizontalAlignment="Right"
+                                             VerticalAlignment="Bottom"
+                                             Margin="0,0,5,5"
+                                             FontSize="14.5"
+                                             Foreground="{DynamicResource HoursBrush}"
+                                             Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}, Converter={StaticResource HoursConverter}}"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="#505050"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter TargetName="border" Property="RenderTransform">
+                                        <Setter.Value>
+                                            <TranslateTransform Y="-3"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter TargetName="border" Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Color="Black" Opacity="0.2"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Light Calendar Day Style -->
+            <Style x:Key="LightCalendarDayStyle" TargetType="Button">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <SolidColorBrush Color="#DEB887"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="BorderThickness" Value="0.6"/>
+                <Setter Property="BorderBrush">
+                    <Setter.Value>
+                        <SolidColorBrush Color="#D7CCC8"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Width" Value="130"/>
+                <Setter Property="Height" Value="55"/>
+                <Setter Property="Margin" Value="12"/>
+                <Setter Property="FontSize" Value="21"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" 
+                                    Background="{TemplateBinding Background}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    CornerRadius="12">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="5" ShadowDepth="2" Color="Black" Opacity="0.1"/>
+                                </Border.Effect>
+                                <Grid>
+                                    <TextBlock x:Name="DayNumber" 
+                                             Text="{TemplateBinding Content}"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             FontSize="18"
+                                             FontWeight="Medium"/>
+                                    <TextBlock x:Name="HoursText"
+                                             HorizontalAlignment="Right"
+                                             VerticalAlignment="Bottom"
+                                             Margin="0,0,5,5"
+                                             FontSize="14.5"
+                                             Foreground="{DynamicResource HoursBrush}"
+                                             Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}, Converter={StaticResource HoursConverter}}"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="#D2B48C"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter TargetName="border" Property="RenderTransform">
+                                        <Setter.Value>
+                                            <TranslateTransform Y="-3"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter TargetName="border" Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Color="Black" Opacity="0.2"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Calendar Day Style (Dynamic) -->
+            <Style x:Key="CalendarDayStyle" TargetType="Button" BasedOn="{StaticResource DarkCalendarDayStyle}"/>
+
+            <!-- Title Bar Button Style -->
+            <Style x:Key="TitleBarButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Width" Value="34"/>
+                <Setter Property="Height" Value="34"/>
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" 
+                                    Background="{TemplateBinding Background}" 
+                                    CornerRadius="4">
+                                <ContentPresenter HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="#1A000000"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Close Button Style -->
+            <Style x:Key="CloseButtonStyle" TargetType="Button" BasedOn="{StaticResource TitleBarButtonStyle}">
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#E81123"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Calendar Header Background Brush -->
+            <SolidColorBrush x:Key="DarkCalendarHeaderBrush" Color="#26000000"/>
+            <SolidColorBrush x:Key="LightCalendarHeaderBrush" Color="#26D4A574"/>
+            
+            <!-- Statistics Background Brush -->
+            <SolidColorBrush x:Key="DarkStatisticsBrush" Color="#991E1E1E"/>
+            <SolidColorBrush x:Key="LightStatisticsBrush" Color="#99D4A574"/>
+            
+            <!-- Current Calendar Header Brush (Default to Dark) -->
+            <SolidColorBrush x:Key="CalendarHeaderBrush" Color="#26000000"/>
+            <SolidColorBrush x:Key="StatisticsBrush" Color="#991E1E1E"/>
+
+            <!-- Modal Style -->
+            <Style x:Key="ModalStyle" TargetType="Window">
+                <Setter Property="Background" Value="#80000000"/>
+                <Setter Property="WindowStyle" Value="None"/>
+                <Setter Property="AllowsTransparency" Value="True"/>
+                <Setter Property="ResizeMode" Value="NoResize"/>
+                <Setter Property="WindowStartupLocation" Value="CenterOwner"/>
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application> 
