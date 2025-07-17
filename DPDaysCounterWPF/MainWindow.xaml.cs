@@ -159,30 +159,35 @@ namespace DPDaysCounterWPF
                 CalendarGrid.Children.Add(emptyButton);
             }
             
-            // Add only days with DP hours
+            // Add days of current month
             for (int day = 1; day <= daysInMonth; day++)
             {
                 var dateString = $"{year:00}-{month:00}-{day:00}";
+                var button = CreateCalendarDayButton(day.ToString());
+                button.Tag = dateString;
                 
-                // Only show days that have DP hours
+                // Check if it's today
+                if (day == today.Day && month == today.Month && year == today.Year)
+                {
+                    button.Tag = "Today";
+                }
+                
+                // Check if has DP hours
                 if (dpHours.ContainsKey(dateString) && dpHours[dateString] > 0)
                 {
-                    var button = CreateCalendarDayButton(day.ToString());
+                    button.Tag = "HasHours";
+                    // Set the day number as main content
+                    button.Content = day.ToString();
+                    // Store hours in Tag for later access
                     button.Tag = $"HasHours:{dpHours[dateString]}";
-                    
-                    // Check if it's today
-                    if (day == today.Day && month == today.Month && year == today.Year)
-                    {
-                        button.Tag = $"Today:{dpHours[dateString]}";
-                    }
-                    
-                    button.Click += (s, e) => CalendarDay_Click(s, e, dateString);
-                    CalendarGrid.Children.Add(button);
                 }
+                
+                button.Click += (s, e) => CalendarDay_Click(s, e, dateString);
+                CalendarGrid.Children.Add(button);
             }
             
             // Add empty cells to complete the grid (5 rows * 7 columns = 35)
-            var totalCells = firstDayIndex + CalendarGrid.Children.Count;
+            var totalCells = firstDayIndex + daysInMonth;
             var remainingCells = 35 - totalCells;
             
             for (int i = 0; i < remainingCells; i++)
@@ -386,20 +391,9 @@ namespace DPDaysCounterWPF
                 if (child is Button button)
                 {
                     var tag = button.Tag?.ToString();
-                    if (tag.StartsWith("HasHours:") || tag.StartsWith("Today:"))
+                    if (tag == dateString || tag == "Today" || tag.StartsWith("HasHours:"))
                     {
-                        // Extract the date from the button's click handler
-                        // We need to find the button that corresponds to this dateString
-                        // For now, we'll use a simple approach by checking if the button has the right day number
-                        var content = button.Content?.ToString();
-                        if (!string.IsNullOrEmpty(content) && int.TryParse(content, out int day))
-                        {
-                            var expectedDateString = $"{currentDate.Year:00}-{currentDate.Month:00}-{day:00}";
-                            if (expectedDateString == dateString)
-                            {
-                                return button;
-                            }
-                        }
+                        return button;
                     }
                 }
             }
