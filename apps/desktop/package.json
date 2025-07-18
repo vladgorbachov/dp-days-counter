@@ -1,0 +1,64 @@
+{
+  "name": "@dp-counter/desktop",
+  "version": "1.0.0",
+  "description": "Professional application for tracking Dynamic Positioning hours on vessels",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "dev": "concurrently \"npm run build:watch\" \"npm run electron:dev\"",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "tsc -p tsconfig.renderer.json && npm run copy:static",
+    "copy:static": "copy src\\renderer\\index.html dist\\renderer\\ & copy src\\renderer\\styles.css dist\\renderer\\ & mkdir dist\\assets 2>$null & copy assets\\* dist\\assets\\",
+    "build:watch": "concurrently \"npm run build:main:watch\" \"npm run build:renderer:watch\"",
+    "build:main:watch": "tsc -p tsconfig.main.json --watch",
+    "build:renderer:watch": "tsc -p tsconfig.renderer.json --watch",
+    "electron:dev": "wait-on dist/main/main.js && electron .",
+    "start": "npm run build && electron .",
+    "pack": "npm run build && electron-builder",
+    "dist": "npm run build && electron-builder --publish=never",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "electron",
+    "typescript",
+    "dp",
+    "dynamic-positioning",
+    "vessel",
+    "hours-counter"
+  ],
+  "author": "DeLion Software",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "concurrently": "^8.2.2",
+    "electron": "^27.1.0",
+    "electron-builder": "^24.6.4",
+    "typescript": "^5.3.2",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
+  "build": {
+    "appId": "com.delion.dp-counter",
+    "productName": "DP Hours Counter",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/**/*",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/logo.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+} 

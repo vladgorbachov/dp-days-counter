@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DP Hours Counter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Title Bar -->
+        <div class="title-bar">
+            <div class="title-bar-left">
+                <img src="../assets/logo.png" alt="Logo" class="logo">
+                <span class="app-title">DP HOURS COUNTER</span>
+            </div>
+            <div class="title-bar-right">
+                <button class="title-bar-btn" id="minimizeBtn">🗕</button>
+                <button class="title-bar-btn" id="maximizeBtn">🗖</button>
+                <button class="title-bar-btn close-btn" id="closeBtn">✕</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Calendar Container -->
+            <div class="calendar-container">
+                <!-- Calendar Header -->
+                <div class="calendar-header">
+                    <button class="nav-btn" id="prevMonthBtn">‹</button>
+                    <h2 class="current-month" id="currentMonthText">JANUARY 2024</h2>
+                    <button class="nav-btn" id="nextMonthBtn">›</button>
+                </div>
+
+                <!-- Weekdays Header -->
+                <div class="weekdays-header">
+                    <div class="weekday">Sun</div>
+                    <div class="weekday">Mon</div>
+                    <div class="weekday">Tue</div>
+                    <div class="weekday">Wed</div>
+                    <div class="weekday">Thu</div>
+                    <div class="weekday">Fri</div>
+                    <div class="weekday">Sat</div>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Calendar days will be generated here -->
+                </div>
+
+                <!-- Statistics Footer -->
+                <div class="statistics-footer">
+                    <div class="stat-card">
+                        <div class="stat-label">Month Hours</div>
+                        <div class="stat-value" id="monthHoursText">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Month Days</div>
+                        <div class="stat-value" id="monthDaysText">0</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <h3 class="sidebar-title">Settings</h3>
+                
+                <div class="setting-group">
+                    <label class="setting-label">Theme</label>
+                    <div class="theme-buttons">
+                        <button class="theme-btn" id="lightThemeBtn">Light</button>
+                        <button class="theme-btn active" id="darkThemeBtn">Dark</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">Updates</label>
+                    <button class="update-btn" id="checkUpdatesBtn">Check for Updates</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Trigger Area -->
+        <div class="sidebar-trigger" id="sidebarTrigger"></div>
+    </div>
+
+    <!-- Hours Input Modal -->
+    <div class="modal-overlay" id="hoursModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Enter DP Hours</h3>
+                <button class="modal-close" id="modalCloseBtn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="date-display" id="modalDateDisplay">Monday, January 1, 2024</div>
+                <div class="hours-input-group">
+                    <label>Hours (0-24):</label>
+                    <div class="hours-controls">
+                        <button class="hours-btn" id="decreaseBtn">−</button>
+                        <input type="text" class="hours-input" id="hoursInput" value="0" maxlength="2">
+                        <button class="hours-btn" id="increaseBtn">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn save-btn" id="saveBtn">Save</button>
+                <button class="modal-btn cancel-btn" id="cancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html> 

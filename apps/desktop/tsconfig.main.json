@@ -1,0 +1,14 @@
+{
+  "extends": "../../packages/tsconfig/electron.json",
+  "compilerOptions": {
+    "outDir": "dist/main",
+    "rootDir": "src/main"
+  },
+  "include": [
+    "src/main/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+} 
