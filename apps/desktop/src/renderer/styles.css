@@ -220,11 +220,13 @@ body {
 }
 
 .current-month {
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 32px;
+  font-weight: 700;
   color: var(--text-primary);
   text-align: center;
   flex: 1;
+  text-shadow: 0 2px 4px var(--shadow);
+  letter-spacing: 0.5px;
 }
 
 /* Weekdays header */
@@ -238,9 +240,11 @@ body {
 
 .weekday {
   text-align: center;
-  font-weight: 500;
-  font-size: 18px;
+  font-weight: 600;
+  font-size: 16px;
   color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 /* Calendar grid */
@@ -258,25 +262,31 @@ body {
 .calendar-day {
   width: 100%;
   height: 100%;
-  background: var(--primary);
-  border: 0.6px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   color: var(--text-primary);
   font-size: 32px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.2s;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .calendar-day:hover {
-  background: var(--primary-variant);
+  background: var(--gradient-primary);
   transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.calendar-day.has-hours {
+  background: var(--gradient-secondary);
+  color: white;
+  font-weight: 700;
 }
 
 .calendar-day.has-hours::after {
@@ -284,15 +294,20 @@ body {
   position: absolute;
   bottom: 8px;
   right: 8px;
-  font-size: 22px;
-  color: var(--hours);
-  font-weight: normal;
+  font-size: 18px;
+  color: white;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 6px;
 }
 
 
 
 .calendar-day.today {
-  border: 2px solid var(--hours);
+  border: 3px solid var(--accent);
+  background: var(--surface);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
 }
 
 /* Statistics footer */
@@ -306,22 +321,28 @@ body {
 
 .stat-card {
   background: var(--stats-bg);
-  border-radius: 8px;
-  padding: 15px 8px;
+  border-radius: 12px;
+  padding: 20px 15px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-label {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--stats-text);
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .stat-value {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
   color: var(--stats-text);
+  text-shadow: 0 2px 4px var(--shadow);
 }
 
 /* Sidebar */
@@ -331,9 +352,11 @@ body {
   left: -250px;
   width: 250px;
   height: calc(100vh - 50px);
-  background: var(--surface);
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid var(--border);
   box-shadow: 5px 0 20px rgba(0, 0, 0, 0.3);
-  transition: left 0.1s ease-out;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   -webkit-app-region: no-drag;
 }
@@ -347,10 +370,12 @@ body {
 }
 
 .sidebar-title {
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  text-shadow: 0 2px 4px var(--shadow);
+  letter-spacing: 0.5px;
 }
 
 .setting-group {
@@ -359,10 +384,12 @@ body {
 
 .setting-label {
   display: block;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .theme-buttons {
@@ -461,9 +488,11 @@ body {
 }
 
 .modal-header h3 {
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--text-primary);
+  text-shadow: 0 2px 4px var(--shadow);
+  letter-spacing: 0.5px;
 }
 
 .modal-close {
@@ -490,19 +519,22 @@ body {
 }
 
 .date-display {
-  font-size: 18px;
+  font-size: 20px;
   color: var(--text-secondary);
   text-align: center;
-  font-weight: 500;
-  margin-bottom: 20px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  letter-spacing: 0.3px;
 }
 
 .hours-input-group label {
   display: block;
-  font-size: 16px;
+  font-size: 18px;
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .hours-controls {
