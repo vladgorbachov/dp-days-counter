@@ -1,5 +1,5 @@
 // Types
-export interface DPHours {
+export interface DPDays {
   [date: string]: number;
 }
 
@@ -41,7 +41,7 @@ export interface Theme {
 // UI Component types
 export interface CalendarProps {
   currentDate: Date;
-  dpHours: DPHours;
+  dpDays: DPDays;
   onDayClick: (dateString: string, event: MouseEvent) => void;
 }
 

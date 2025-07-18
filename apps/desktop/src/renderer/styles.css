@@ -18,6 +18,8 @@
   --light-stats-bg: rgba(79, 70, 229, 0.1);
   --light-stats-text: #1e293b;
   --light-shadow: rgba(0, 0, 0, 0.1);
+  --light-sidebar-bg: rgba(255, 255, 255, 0.95);
+  --light-sidebar-border: #e2e8f0;
 
   /* Dark Theme - Modern */
   --dark-bg: #0f172a;
@@ -37,6 +39,8 @@
   --dark-stats-bg: rgba(30, 41, 59, 0.8);
   --dark-stats-text: #f1f5f9;
   --dark-shadow: rgba(0, 0, 0, 0.3);
+  --dark-sidebar-bg: rgba(30, 41, 59, 0.95);
+  --dark-sidebar-border: #475569;
 
   /* Gradients for modern look */
   --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
@@ -62,6 +66,8 @@
   --stats-bg: var(--dark-stats-bg);
   --stats-text: var(--dark-stats-text);
   --shadow: var(--dark-shadow);
+  --sidebar-bg: var(--dark-sidebar-bg);
+  --sidebar-border: var(--dark-sidebar-border);
 }
 
 /* Light theme class */
@@ -81,6 +87,8 @@
   --stats-bg: var(--light-stats-bg);
   --stats-text: var(--light-stats-text);
   --shadow: var(--light-shadow);
+  --sidebar-bg: var(--light-sidebar-bg);
+  --sidebar-border: var(--light-sidebar-border);
 }
 
 /* Reset and base styles */
@@ -352,10 +360,10 @@ body {
   left: -250px;
   width: 250px;
   height: calc(100vh - 50px);
-  background: rgba(30, 41, 59, 0.95);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(10px);
-  border-right: 1px solid var(--border);
-  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.3);
+  border-right: 1px solid var(--sidebar-border);
+  box-shadow: 5px 0 20px var(--shadow);
   transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   -webkit-app-region: no-drag;
@@ -485,6 +493,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  min-height: 80px;
 }
 
 .modal-header h3 {

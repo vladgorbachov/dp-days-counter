@@ -7,7 +7,7 @@ let mainWindow: BrowserWindow | null = null;
 
 // Data storage paths
 const userDataPath = app.getPath('userData');
-const dpHoursFile = path.join(userDataPath, 'dp_hours.json');
+const dpDaysFile = path.join(userDataPath, 'dp_days.json');
 const settingsFile = path.join(userDataPath, 'settings.json');
 
 // Ensure data directory exists
@@ -53,25 +53,25 @@ function createWindow(): void {
 }
 
 // IPC Handlers for data management
-ipcMain.handle('load-dp-hours', async () => {
+ipcMain.handle('load-dp-days', async () => {
   try {
-    if (fs.existsSync(dpHoursFile)) {
-      const data = fs.readFileSync(dpHoursFile, 'utf8');
+    if (fs.existsSync(dpDaysFile)) {
+      const data = fs.readFileSync(dpDaysFile, 'utf8');
       return JSON.parse(data);
     }
     return {};
   } catch (error) {
-    console.error('Error loading DP hours:', error);
+    console.error('Error loading DP days:', error);
     return {};
   }
 });
 
-ipcMain.handle('save-dp-hours', async (event, data: Record<string, number>) => {
+ipcMain.handle('save-dp-days', async (event, data: Record<string, number>) => {
   try {
-    fs.writeFileSync(dpHoursFile, JSON.stringify(data, null, 2));
+    fs.writeFileSync(dpDaysFile, JSON.stringify(data, null, 2));
     return true;
   } catch (error) {
-    console.error('Error saving DP hours:', error);
+    console.error('Error saving DP days:', error);
     return false;
   }
 });

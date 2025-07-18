@@ -4,8 +4,8 @@ import { contextBridge, ipcRenderer } from 'electron';
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
   // Data management
-  loadDPHours: () => ipcRenderer.invoke('load-dp-hours'),
-  saveDPHours: (data: Record<string, number>) => ipcRenderer.invoke('save-dp-hours', data),
+  loadDPDays: () => ipcRenderer.invoke('load-dp-days'),
+  saveDPDays: (data: Record<string, number>) => ipcRenderer.invoke('save-dp-days', data),
   loadSettings: () => ipcRenderer.invoke('load-settings'),
   saveSettings: (data: any) => ipcRenderer.invoke('save-settings', data),
   
@@ -20,8 +20,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 declare global {
   interface Window {
     electronAPI: {
-      loadDPHours: () => Promise<Record<string, number>>;
-      saveDPHours: (data: Record<string, number>) => Promise<boolean>;
+        loadDPDays: () => Promise<Record<string, number>>;
+  saveDPDays: (data: Record<string, number>) => Promise<boolean>;
       loadSettings: () => Promise<any>;
       saveSettings: (data: any) => Promise<boolean>;
       minimizeWindow: () => Promise<void>;

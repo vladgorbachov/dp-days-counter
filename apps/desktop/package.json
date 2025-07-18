@@ -1,7 +1,7 @@
 {
-  "name": "@dp-counter/desktop",
+  "name": "@dp-days-counter/desktop",
   "version": "1.0.0",
-  "description": "Professional application for tracking Dynamic Positioning hours on vessels",
+  "description": "Professional application for tracking Dynamic Positioning days and hours on vessels",
   "main": "dist/main/main.js",
   "scripts": {
     "dev": "concurrently \"npm run build:watch\" \"npm run electron:dev\"",
@@ -40,8 +40,8 @@
     "electron-store": "^8.1.0"
   },
   "build": {
-    "appId": "com.delion.dp-counter",
-    "productName": "DP Hours Counter",
+    "appId": "com.delion.dp-days-counter",
+    "productName": "DP Days Counter",
     "directories": {
       "output": "release"
     },

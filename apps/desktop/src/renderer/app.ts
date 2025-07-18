@@ -2,8 +2,8 @@
 declare global {
   interface Window {
     electronAPI: {
-      loadDPHours: () => Promise<Record<string, number>>;
-      saveDPHours: (data: Record<string, number>) => Promise<boolean>;
+      loadDPDays: () => Promise<Record<string, number>>;
+      saveDPDays: (data: Record<string, number>) => Promise<boolean>;
       loadSettings: () => Promise<any>;
       saveSettings: (data: any) => Promise<boolean>;
       minimizeWindow: () => Promise<void>;
@@ -15,7 +15,7 @@ declare global {
 }
 
 // Types
-interface DPHours {
+interface DPDays {
   [date: string]: number;
 }
 
@@ -64,9 +64,9 @@ const validateHoursInput = (input: string): number | null => {
 };
 
 // Main application class
-class DPHoursCounter {
+class DPDaysCounter {
   private currentDate: Date;
-  private dpHours: DPHours;
+  private dpDays: DPDays;
   private settings: AppSettings;
   private selectedDate: string | null = null;
   private sidebarVisible = false;
@@ -74,7 +74,7 @@ class DPHoursCounter {
 
   constructor() {
     this.currentDate = new Date();
-    this.dpHours = {};
+    this.dpDays = {};
     this.settings = { theme: 'dark' };
     
     this.initializeApp();
@@ -90,7 +90,7 @@ class DPHoursCounter {
 
   private async loadData(): Promise<void> {
     try {
-      this.dpHours = await window.electronAPI.loadDPHours();
+      this.dpDays = await window.electronAPI.loadDPDays();
       this.settings = await window.electronAPI.loadSettings();
     } catch (error) {
       console.error('Error loading data:', error);
@@ -99,7 +99,7 @@ class DPHoursCounter {
 
   private async saveData(): Promise<void> {
     try {
-      await window.electronAPI.saveDPHours(this.dpHours);
+      await window.electronAPI.saveDPDays(this.dpDays);
       await window.electronAPI.saveSettings(this.settings);
     } catch (error) {
       console.error('Error saving data:', error);
@@ -271,7 +271,7 @@ class DPHoursCounter {
     for (let day = 1; day <= daysInMonth; day++) {
       const dateString = formatDate(new Date(year, month, day));
       const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-      const hours = this.dpHours[dateString] || 0;
+      const hours = this.dpDays[dateString] || 0;
       const hasHours = hours > 0;
 
       const dayElement = this.createCalendarDayElement(day.toString(), {
@@ -336,7 +336,7 @@ class DPHoursCounter {
         day: 'numeric'
       });
 
-      const currentHours = this.dpHours[dateString] || 0;
+      const currentHours = this.dpDays[dateString] || 0;
       hoursInput.value = currentHours.toString();
 
       modal.classList.add('visible');
@@ -361,10 +361,16 @@ class DPHoursCounter {
       return;
     }
 
+    // Check for minimum DP hours requirement
+    if (validatedHours === 1) {
+      alert('DP day is minimum 2 hours');
+      return;
+    }
+
     if (validatedHours > 0) {
-      this.dpHours[this.selectedDate] = validatedHours;
+      this.dpDays[this.selectedDate] = validatedHours;
     } else {
-      delete this.dpHours[this.selectedDate];
+      delete this.dpDays[this.selectedDate];
     }
 
     this.saveData();
@@ -380,7 +386,7 @@ class DPHoursCounter {
     let monthTotal = 0;
     const monthDays = new Set<string>();
 
-    Object.entries(this.dpHours).forEach(([dateString, hours]) => {
+    Object.entries(this.dpDays).forEach(([dateString, hours]) => {
       if (hours <= 0) return;
 
       const date = parseDate(dateString);
@@ -459,7 +465,7 @@ class DPHoursCounter {
 
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  new DPHoursCounter();
+  new DPDaysCounter();
 });
 
 export {}; 

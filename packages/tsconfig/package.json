@@ -1,5 +1,5 @@
 {
-  "name": "@dp-counter/tsconfig",
+  "name": "@dp-days-counter/tsconfig",
   "version": "1.0.0",
   "private": true,
   "files": [
