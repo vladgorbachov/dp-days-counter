@@ -13,6 +13,10 @@ build/
 apps/desktop/release/
 apps/desktop/dist/
 
+# Test results and reports
+apps/desktop/test-results/
+apps/desktop/playwright-report/
+
 # IDE
 .vscode/
 .idea/
