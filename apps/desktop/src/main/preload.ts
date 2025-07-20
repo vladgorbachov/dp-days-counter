@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, shell } from 'electron';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -13,7 +13,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
   maximizeWindow: () => ipcRenderer.invoke('maximize-window'),
   closeWindow: () => ipcRenderer.invoke('close-window'),
-  isMaximized: () => ipcRenderer.invoke('is-maximized')
+  isMaximized: () => ipcRenderer.invoke('is-maximized'),
+  
+  // External links
+  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
+  
+  // Loading completion
+  loadingComplete: () => ipcRenderer.invoke('loading-complete')
 });
 
 // Type definitions for the exposed API
@@ -28,6 +34,8 @@ declare global {
       maximizeWindow: () => Promise<void>;
       closeWindow: () => Promise<void>;
       isMaximized: () => Promise<boolean>;
+      openExternal: (url: string) => Promise<void>;
+      loadingComplete: () => Promise<void>;
     };
   }
 } 

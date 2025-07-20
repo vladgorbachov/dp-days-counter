@@ -8,7 +8,7 @@
     "build": "npm run build:main && npm run build:renderer",
     "build:main": "tsc -p tsconfig.main.json",
     "build:renderer": "tsc -p tsconfig.renderer.json && npm run copy:static",
-    "copy:static": "copy src\\renderer\\index.html dist\\renderer\\ & copy src\\renderer\\styles.css dist\\renderer\\ & mkdir dist\\assets 2>$null & copy assets\\* dist\\assets\\",
+    "copy:static": "copy src\\renderer\\index.html dist\\renderer\\ & copy src\\renderer\\loading.html dist\\renderer\\ & copy src\\renderer\\styles.css dist\\renderer\\ & mkdir dist\\assets 2>$null & copy assets\\* dist\\assets\\",
     "build:watch": "concurrently \"npm run build:main:watch\" \"npm run build:renderer:watch\"",
     "build:main:watch": "tsc -p tsconfig.main.json --watch",
     "build:renderer:watch": "tsc -p tsconfig.renderer.json --watch",
@@ -16,7 +16,11 @@
     "start": "npm run build && electron .",
     "pack": "npm run build && electron-builder",
     "dist": "npm run build && electron-builder --publish=never",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
   },
   "keywords": [
     "electron",
@@ -29,7 +33,8 @@
   "author": "DeLion Software",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.10.0",
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^20.19.9",
     "concurrently": "^8.2.2",
     "electron": "^27.1.0",
     "electron-builder": "^24.6.4",
@@ -61,4 +66,4 @@
       "createStartMenuShortcut": true
     }
   }
-} 
+}

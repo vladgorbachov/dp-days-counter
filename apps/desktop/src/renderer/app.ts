@@ -10,6 +10,7 @@ declare global {
       maximizeWindow: () => Promise<void>;
       closeWindow: () => Promise<void>;
       isMaximized: () => Promise<boolean>;
+      openExternal: (url: string) => Promise<void>;
     };
   }
 }
@@ -33,7 +34,10 @@ interface CalendarDay {
 
 // Utility functions
 const formatDate = (date: Date): string => {
-  return date.toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const parseDate = (dateString: string): Date => {
@@ -69,8 +73,8 @@ class DPDaysCounter {
   private dpDays: DPDays;
   private settings: AppSettings;
   private selectedDate: string | null = null;
-  private sidebarVisible = false;
-  private sidebarHideTimer: number | null = null;
+  private startDate: Date | null = null;
+  private endDate: Date | null = null;
 
   constructor() {
     this.currentDate = new Date();
@@ -147,24 +151,58 @@ class DPDaysCounter {
       alert('You are using the latest version!');
     });
 
-    // Sidebar controls
-    const sidebarTrigger = document.getElementById('sidebarTrigger');
-    const sidebar = document.getElementById('sidebar');
-
-    sidebarTrigger?.addEventListener('mouseenter', () => {
-      this.showSidebar();
+    // Settings modal controls
+    document.getElementById('settingsBtn')?.addEventListener('click', () => {
+      this.showSettingsModal();
     });
 
-    sidebarTrigger?.addEventListener('mouseleave', () => {
-      this.startSidebarHideTimer();
+    document.getElementById('settingsModalCloseBtn')?.addEventListener('click', () => {
+      this.hideSettingsModal();
     });
 
-    sidebar?.addEventListener('mouseenter', () => {
-      this.stopSidebarHideTimer();
+    document.getElementById('settingsCancelBtn')?.addEventListener('click', () => {
+      this.hideSettingsModal();
     });
 
-    sidebar?.addEventListener('mouseleave', () => {
-      this.startSidebarHideTimer();
+    // Website link - add after modal setup to ensure element exists
+    this.setupWebsiteLink();
+
+    // Date input controls
+    document.getElementById('startDateInput')?.addEventListener('click', () => {
+      this.showDatePicker('start');
+    });
+
+    document.getElementById('endDateInput')?.addEventListener('click', () => {
+      this.showDatePicker('end');
+    });
+
+    // Context menu controls
+    document.getElementById('startDateInput')?.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      this.showContextMenu(e, 'start');
+    });
+
+    document.getElementById('endDateInput')?.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      this.showContextMenu(e, 'end');
+    });
+
+    document.getElementById('resetDateItem')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.resetDateField();
+    });
+
+    // Hide context menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const contextMenu = document.getElementById('contextMenu');
+      if (contextMenu && !contextMenu.contains(e.target as Node)) {
+        this.hideContextMenu();
+      }
+    });
+
+    // Prevent context menu from closing when clicking inside it
+    document.getElementById('contextMenu')?.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
 
     // Keyboard events
@@ -317,7 +355,7 @@ class DPDaysCounter {
     return dayElement;
   }
 
-  private handleDayClick(dateString: string, event: MouseEvent): void {
+    private handleDayClick(dateString: string, event: MouseEvent): void {
     this.selectedDate = dateString;
     this.showHoursModal(dateString);
   }
@@ -429,43 +467,279 @@ class DPDaysCounter {
     }
   }
 
-  private showSidebar(): void {
-    if (!this.sidebarVisible) {
-      this.sidebarVisible = true;
-      this.stopSidebarHideTimer();
+  private showSettingsModal(): void {
+    const modal = document.getElementById('settingsModal');
+    modal?.classList.add('visible');
+  }
+
+  private hideSettingsModal(): void {
+    const modal = document.getElementById('settingsModal');
+    modal?.classList.remove('visible');
+  }
+
+  private showDatePicker(type: 'start' | 'end'): void {
+    // Hide any other visible date pickers first
+    const allPickers = document.querySelectorAll('.date-picker');
+    allPickers.forEach(p => p.classList.remove('visible'));
+
+    const pickerId = type === 'start' ? 'startDatePicker' : 'endDatePicker';
+    const picker = document.getElementById(pickerId);
+    
+    if (picker) {
+      picker.classList.add('visible');
       
-      const sidebar = document.getElementById('sidebar');
-      sidebar?.classList.add('visible');
+      // Create calendar for date picker
+      this.createDatePickerCalendar(picker, type);
+
+      // Add click outside listener
+      setTimeout(() => {
+        document.addEventListener('click', this.handleClickOutside.bind(this, picker), { once: true });
+      }, 0);
     }
   }
 
-  private hideSidebar(): void {
-    if (this.sidebarVisible) {
-      this.sidebarVisible = false;
+  private handleClickOutside(picker: HTMLElement, event: Event): void {
+    if (!picker.contains(event.target as Node)) {
+      picker.classList.remove('visible');
+    }
+  }
+
+  private createDatePickerCalendar(container: HTMLElement, type: 'start' | 'end'): void {
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth() + 1; // Convert to 1-based month
+
+    const updateCalendar = () => {
+      container.innerHTML = `
+        <div class="date-picker-header">
+          <button class="date-picker-nav date-picker-prev">‹</button>
+          <span class="date-picker-month">${new Date(currentYear, currentMonth - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+          <button class="date-picker-nav date-picker-next">›</button>
+        </div>
+        <div class="date-picker-grid">
+          <div class="date-picker-weekday">Sun</div>
+          <div class="date-picker-weekday">Mon</div>
+          <div class="date-picker-weekday">Tue</div>
+          <div class="date-picker-weekday">Wed</div>
+          <div class="date-picker-weekday">Thu</div>
+          <div class="date-picker-weekday">Fri</div>
+          <div class="date-picker-weekday">Sat</div>
+          ${this.generateDatePickerDays(currentYear, currentMonth, type)}
+        </div>
+      `;
+
+      // Add event listeners for navigation
+      const prevBtn = container.querySelector('.date-picker-prev');
+      const nextBtn = container.querySelector('.date-picker-next');
       
-      const sidebar = document.getElementById('sidebar');
-      sidebar?.classList.remove('visible');
-    }
+      prevBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentMonth--;
+        if (currentMonth < 1) {
+          currentMonth = 12;
+          currentYear--;
+        }
+        updateCalendar();
+      });
+      
+      nextBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentMonth++;
+        if (currentMonth > 12) {
+          currentMonth = 1;
+          currentYear++;
+        }
+        updateCalendar();
+      });
+
+      // Add event listeners for date selection
+      const dateDays = container.querySelectorAll('.date-picker-day:not(.empty)');
+      dateDays.forEach(day => {
+        day.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent closing when clicking inside
+          const dateString = day.getAttribute('data-date');
+          if (dateString) {
+            this.selectDateFromPicker(dateString, type);
+          }
+        });
+      });
+
+      // Prevent closing when clicking on the header
+      const header = container.querySelector('.date-picker-header');
+      header?.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      // Prevent closing when clicking on the grid
+      const grid = container.querySelector('.date-picker-grid');
+      grid?.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    };
+
+    updateCalendar();
   }
 
-  private startSidebarHideTimer(): void {
-    this.stopSidebarHideTimer();
-    this.sidebarHideTimer = window.setTimeout(() => {
-      this.hideSidebar();
-    }, 1000);
+  private generateDatePickerDays(year: number, month: number, type: 'start' | 'end'): string {
+    // month is 0-based in JavaScript, so we need to adjust
+    const jsMonth = month - 1; // Convert to 0-based
+    const firstDay = new Date(year, jsMonth, 1);
+    const lastDay = new Date(year, jsMonth + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const firstDayIndex = firstDay.getDay();
+
+    let html = '';
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDayIndex; i++) {
+      html += '<div class="date-picker-day empty"></div>';
+    }
+
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, jsMonth, day);
+      const dateString = formatDate(date);
+      const hasHours = this.dpDays[dateString] && this.dpDays[dateString] > 0;
+      
+      html += `
+        <div class="date-picker-day ${hasHours ? 'has-hours' : ''}" 
+             data-date="${dateString}">
+          ${day}
+        </div>
+      `;
+    }
+
+    return html;
   }
 
-  private stopSidebarHideTimer(): void {
-    if (this.sidebarHideTimer) {
-      clearTimeout(this.sidebarHideTimer);
-      this.sidebarHideTimer = null;
+  private selectDateFromPicker(dateString: string, type: 'start' | 'end'): void {
+    const date = parseDate(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+    
+    if (type === 'start') {
+      this.startDate = new Date(date); // Create new Date object
+      const startInput = document.getElementById('startDateInput') as HTMLInputElement;
+      if (startInput) startInput.value = formattedDate;
+    } else {
+      this.endDate = new Date(date); // Create new Date object
+      const endInput = document.getElementById('endDateInput') as HTMLInputElement;
+      if (endInput) endInput.value = formattedDate;
     }
+
+    // Hide the date picker
+    const pickerId = type === 'start' ? 'startDatePicker' : 'endDatePicker';
+    const picker = document.getElementById(pickerId);
+    picker?.classList.remove('visible');
+
+    // Calculate and update results
+    this.calculateDateRangeResults();
   }
+
+  private calculateDateRangeResults(): void {
+    if (!this.startDate || !this.endDate) return;
+
+    let totalDays = 0;
+    let totalHours = 0;
+    const currentDate = new Date(this.startDate);
+
+    while (currentDate <= this.endDate) {
+      const dateString = formatDate(currentDate);
+      const hours = this.dpDays[dateString] || 0;
+      
+      if (hours > 0) {
+        totalDays++;
+        totalHours += hours;
+      }
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Update UI
+    const totalDaysResult = document.getElementById('totalDaysResult');
+    const totalHoursResult = document.getElementById('totalHoursResult');
+    
+    if (totalDaysResult) totalDaysResult.textContent = totalDays.toString();
+    if (totalHoursResult) totalHoursResult.textContent = totalHours.toString();
+  }
+
+  private showContextMenu(event: MouseEvent, type: 'start' | 'end'): void {
+    const contextMenu = document.getElementById('contextMenu');
+    if (!contextMenu) return;
+
+    // Store the field type for reset functionality
+    (contextMenu as any).fieldType = type;
+
+    // Position the context menu
+    contextMenu.style.left = event.pageX + 'px';
+    contextMenu.style.top = event.pageY + 'px';
+    contextMenu.classList.add('visible');
+
+    // Prevent the default context menu
+    event.preventDefault();
+  }
+
+  private hideContextMenu(): void {
+    const contextMenu = document.getElementById('contextMenu');
+    contextMenu?.classList.remove('visible');
+  }
+
+  private resetDateField(): void {
+    const contextMenu = document.getElementById('contextMenu');
+    const fieldType = (contextMenu as any).fieldType;
+
+    if (fieldType === 'start') {
+      this.startDate = null;
+      const startInput = document.getElementById('startDateInput') as HTMLInputElement;
+      if (startInput) startInput.value = '';
+    } else if (fieldType === 'end') {
+      this.endDate = null;
+      const endInput = document.getElementById('endDateInput') as HTMLInputElement;
+      if (endInput) endInput.value = '';
+    }
+
+    // Hide context menu
+    this.hideContextMenu();
+
+    // Reset results to 0
+    const totalDaysResult = document.getElementById('totalDaysResult');
+    const totalHoursResult = document.getElementById('totalHoursResult');
+    
+    if (totalDaysResult) totalDaysResult.textContent = '0';
+    if (totalHoursResult) totalHoursResult.textContent = '0';
+  }
+
+  private setupWebsiteLink(): void {
+    // Wait for the element to be available
+    const setupLink = () => {
+      const websiteLink = document.querySelector('.website-link');
+      if (websiteLink) {
+        console.log('Website link found, adding click handler');
+        websiteLink.addEventListener('click', () => {
+          console.log('Website link clicked, opening external URL');
+          window.electronAPI.openExternal('https://www.delionsoft.com');
+        });
+      } else {
+        // Retry after a short delay if element not found
+        setTimeout(setupLink, 100);
+      }
+    };
+    
+    setupLink();
+  }
+
+
 }
 
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  new DPDaysCounter();
-});
+  const app = new DPDaysCounter();
+  // Make app instance globally available for date picker
+  (window as any).dpDaysCounter = app;
+  
+  // Show app immediately since loading screen already handled the delay
+  document.body.style.opacity = '1';
+}); 
 
 export {}; 

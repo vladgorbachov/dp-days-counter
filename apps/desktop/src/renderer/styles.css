@@ -1,3 +1,6 @@
+/* Import Orbitron font */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
 /* CSS Variables for theming */
 :root {
   /* Light Theme - Modern */
@@ -20,6 +23,11 @@
   --light-shadow: rgba(0, 0, 0, 0.1);
   --light-sidebar-bg: rgba(255, 255, 255, 0.95);
   --light-sidebar-border: #e2e8f0;
+  --light-nav-btn: #4f46e5;
+  --light-nav-btn-hover: #6366f1;
+  --light-result-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  --light-close-btn: #64748b;
+  --light-close-btn-hover: #475569;
 
   /* Dark Theme - Modern */
   --dark-bg: #0f172a;
@@ -41,6 +49,11 @@
   --dark-shadow: rgba(0, 0, 0, 0.3);
   --dark-sidebar-bg: rgba(30, 41, 59, 0.95);
   --dark-sidebar-border: #475569;
+  --dark-nav-btn: #6366f1;
+  --dark-nav-btn-hover: #8b5cf6;
+  --dark-result-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --dark-close-btn: #94a3b8;
+  --dark-close-btn-hover: #cbd5e1;
 
   /* Gradients for modern look */
   --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
@@ -68,6 +81,11 @@
   --shadow: var(--dark-shadow);
   --sidebar-bg: var(--dark-sidebar-bg);
   --sidebar-border: var(--dark-sidebar-border);
+  --nav-btn: var(--dark-nav-btn);
+  --nav-btn-hover: var(--dark-nav-btn-hover);
+  --result-gradient: var(--dark-result-gradient);
+  --close-btn: var(--dark-close-btn);
+  --close-btn-hover: var(--dark-close-btn-hover);
 }
 
 /* Light theme class */
@@ -89,6 +107,13 @@
   --shadow: var(--light-shadow);
   --sidebar-bg: var(--light-sidebar-bg);
   --sidebar-border: var(--light-sidebar-border);
+  --nav-btn: var(--light-nav-btn);
+  --nav-btn-hover: var(--light-nav-btn-hover);
+  --result-gradient: var(--light-result-gradient);
+  --close-btn: var(--light-close-btn);
+  --close-btn-hover: var(--light-close-btn-hover);
+  /* Smooth theme transitions */
+  transition: all 0.3s ease;
 }
 
 /* Reset and base styles */
@@ -99,14 +124,26 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 14px;
-  background: var(--bg);
+  background: #0f172a; /* Default dark background to prevent flashing */
   color: var(--text-primary);
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
   -webkit-app-region: drag;
+  /* Smooth fade in to prevent flashing */
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+/* Numbers should use system font */
+.stat-value,
+.result-value,
+.hours-input,
+.calendar-day,
+.date-picker-day {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* App container */
@@ -174,7 +211,7 @@ body {
 }
 
 .close-btn:hover {
-  background: #E81123;
+  background: var(--close-btn-hover);
   color: white;
 }
 
@@ -182,6 +219,7 @@ body {
 .main-content {
   flex: 1;
   padding: 30px;
+  padding-left: 350px; /* Space for static sidebar */
   position: relative;
   -webkit-app-region: no-drag;
 }
@@ -210,10 +248,10 @@ body {
 .nav-btn {
   width: 40px;
   height: 40px;
-  background: var(--gradient-primary);
+  background: var(--nav-btn);
   border: none;
   border-radius: 12px;
-  color: var(--text-primary);
+  color: white;
   font-size: 24px;
   cursor: pointer;
   box-shadow: 0 4px 15px var(--shadow);
@@ -223,6 +261,7 @@ body {
 }
 
 .nav-btn:hover {
+  background: var(--nav-btn-hover);
   transform: translateY(-3px);
   box-shadow: 0 8px 25px var(--shadow);
 }
@@ -356,34 +395,36 @@ body {
 /* Sidebar */
 .sidebar {
   position: fixed;
-  top: 50px;
-  left: -250px;
-  width: 250px;
-  height: calc(100vh - 50px);
+  top: 80px; /* Align with calendar container top */
+  left: 0;
+  width: 320px;
+  height: calc(100vh - 80px - 30px); /* Subtract title bar, statistics footer height, and extra 30px */
   background: var(--sidebar-bg);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(20px);
   border-right: 1px solid var(--sidebar-border);
+  border-radius: 0 12px 12px 0; /* Rounded corners like calendar container */
   box-shadow: 5px 0 20px var(--shadow);
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1000;
   -webkit-app-region: no-drag;
 }
 
-.sidebar.visible {
-  left: 0;
-}
-
 .sidebar-content {
   padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 25px;
   text-shadow: 0 2px 4px var(--shadow);
   letter-spacing: 0.5px;
+  text-align: center;
+  text-transform: uppercase;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .setting-group {
@@ -447,15 +488,319 @@ body {
   box-shadow: 0 8px 25px var(--shadow);
 }
 
-/* Sidebar trigger */
-.sidebar-trigger {
-  position: fixed;
-  top: 50px;
+/* Date Range Section */
+.date-range-section {
+  margin-bottom: 30px;
+}
+
+.date-input-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.date-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.date-input {
+  width: 100%;
+  height: 45px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 0 15px;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.date-input:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.date-picker {
+  position: absolute;
+  top: 100%;
   left: 0;
-  width: 20px;
-  height: calc(100vh - 50px);
-  z-index: 999;
-  -webkit-app-region: no-drag;
+  right: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px var(--shadow);
+  z-index: 1001;
+  display: none;
+  padding: 15px;
+  margin-top: 5px;
+}
+
+.date-picker.visible {
+  display: block;
+}
+
+/* Results Section */
+.results-section {
+  margin-bottom: 30px;
+}
+
+.result-group {
+  margin-bottom: 15px;
+}
+
+.result-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-value {
+  width: 100%;
+  height: 45px;
+  background: var(--result-gradient);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px var(--shadow);
+  box-shadow: 0 4px 15px var(--shadow);
+}
+
+/* Settings Section */
+.settings-section {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-btn {
+  width: 100%;
+  height: 45px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.settings-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--shadow);
+}
+
+.settings-icon {
+  font-size: 16px;
+}
+
+/* Settings Modal */
+.settings-modal {
+  width: 400px;
+}
+
+/* Copyright section */
+.copyright-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.copyright-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.website-link {
+  font-size: 11px;
+  color: var(--primary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.website-link:hover {
+  color: var(--primary-variant);
+  text-decoration: underline;
+}
+
+/* Date Picker Styles */
+.date-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 0 5px;
+}
+
+.date-picker-nav {
+  width: 30px;
+  height: 30px;
+  background: var(--primary);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.date-picker-nav:hover {
+  background: var(--primary-variant);
+  transform: scale(1.1);
+}
+
+.date-picker-month {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.date-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  width: 100%;
+}
+
+.date-picker-weekday {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 32px;
+  margin: 0 auto;
+}
+
+.date-picker-day {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.date-picker-day:hover {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.date-picker-day.empty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+.date-picker-day.empty:hover {
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
+.date-picker-day.has-hours {
+  background: var(--gradient-secondary);
+  color: white;
+  font-weight: 600;
+}
+
+.date-picker-day.has-hours::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px var(--shadow);
+}
+
+/* Context Menu */
+.context-menu {
+  position: fixed;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 25px var(--shadow);
+  z-index: 10000;
+  min-width: 120px;
+  overflow: hidden;
+  display: none;
+}
+
+.context-menu.visible {
+  display: block;
+}
+
+.context-menu-item {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.context-menu-item:hover {
+  background: var(--primary);
+  color: white;
 }
 
 /* Modal */
@@ -509,7 +854,7 @@ body {
   height: 32px;
   background: transparent;
   border: none;
-  color: var(--text-primary);
+  color: var(--close-btn);
   font-size: 16px;
   cursor: pointer;
   border-radius: 4px;
@@ -520,7 +865,8 @@ body {
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--close-btn-hover);
+  color: white;
 }
 
 .modal-body {
@@ -544,6 +890,7 @@ body {
   margin-bottom: 20px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
 .hours-controls {
@@ -627,12 +974,13 @@ body {
 }
 
 .cancel-btn {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: var(--close-btn);
   color: white;
   box-shadow: 0 4px 15px var(--shadow);
 }
 
 .cancel-btn:hover {
+  background: var(--close-btn-hover);
   transform: translateY(-3px);
   box-shadow: 0 8px 25px var(--shadow);
 }

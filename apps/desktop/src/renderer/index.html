@@ -58,33 +58,84 @@
                         <div class="stat-label">Month Days</div>
                         <div class="stat-value" id="monthDaysText">0</div>
                     </div>
-
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar -->
+        <!-- Static Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-content">
-                <h3 class="sidebar-title">SETTINGS</h3>
+                <h3 class="sidebar-title">Get Your DP Days & Hours</h3>
                 
-                <div class="setting-group">
-                    <label class="setting-label">Theme</label>
-                    <div class="theme-buttons">
-                        <button class="theme-btn" id="lightThemeBtn">Light</button>
-                        <button class="theme-btn active" id="darkThemeBtn">Dark</button>
+                <!-- Date Range Selection -->
+                <div class="date-range-section">
+                    <div class="date-input-group">
+                        <label class="date-label">Start Date</label>
+                        <input type="text" class="date-input" id="startDateInput" placeholder="dd-mm-yyyy" readonly>
+                        <div class="date-picker" id="startDatePicker"></div>
+                    </div>
+                    
+                    <div class="date-input-group">
+                        <label class="date-label">End Date</label>
+                        <input type="text" class="date-input" id="endDateInput" placeholder="dd-mm-yyyy" readonly>
+                        <div class="date-picker" id="endDatePicker"></div>
                     </div>
                 </div>
 
-                <div class="setting-group">
-                    <label class="setting-label">Updates</label>
-                    <button class="update-btn" id="checkUpdatesBtn">Check for Updates</button>
+                <!-- Results Section -->
+                <div class="results-section">
+                    <div class="result-group">
+                        <label class="result-label">Total Days</label>
+                        <div class="result-value" id="totalDaysResult">0</div>
+                    </div>
+                    
+                    <div class="result-group">
+                        <label class="result-label">Total Hours</label>
+                        <div class="result-value" id="totalHoursResult">0</div>
+                    </div>
+                </div>
+
+                <!-- Settings Button -->
+                <div class="settings-section">
+                    <button class="settings-btn" id="settingsBtn">
+                        <span class="settings-icon">⚙</span>
+                        Settings
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar Trigger Area -->
-        <div class="sidebar-trigger" id="sidebarTrigger"></div>
+        <!-- Settings Modal -->
+        <div class="modal-overlay" id="settingsModal">
+            <div class="modal-content settings-modal">
+                <div class="modal-header">
+                    <h3>Settings</h3>
+                    <button class="modal-close" id="settingsModalCloseBtn">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label class="setting-label">Theme</label>
+                        <div class="theme-buttons">
+                            <button class="theme-btn" id="lightThemeBtn">Light</button>
+                            <button class="theme-btn active" id="darkThemeBtn">Dark</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Updates</label>
+                        <button class="update-btn" id="checkUpdatesBtn">Check for Updates</button>
+                    </div>
+
+                    <div class="copyright-section">
+                        <div class="copyright-text">© DeLIon Software. All rights reserved</div>
+                        <div class="website-link">www.delionsoft.com</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn cancel-btn" id="settingsCancelBtn">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Hours Input Modal -->
@@ -110,6 +161,11 @@
                 <button class="modal-btn cancel-btn" id="cancelBtn">Cancel</button>
             </div>
         </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" id="resetDateItem">Reset</div>
     </div>
 
     <script type="module" src="app.js"></script>

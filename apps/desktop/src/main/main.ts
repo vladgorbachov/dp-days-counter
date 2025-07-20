@@ -24,6 +24,8 @@ function createWindow(): void {
     minHeight: 800,
     frame: false, // Remove default window frame
     titleBarStyle: 'hidden',
+    title: 'DP Days Counter',
+    backgroundColor: '#0f172a', // Dark theme background color
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -33,12 +35,14 @@ function createWindow(): void {
     show: false // Don't show until ready
   });
 
-  // Load the index.html file
-  mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+  // First load the loading screen
+  mainWindow.loadFile(path.join(__dirname, '../renderer/loading.html'));
 
-  // Show window when ready to prevent visual flash
+  // Show loading window immediately
   mainWindow.once('ready-to-show', () => {
-    mainWindow?.show();
+    if (mainWindow) {
+      mainWindow.show();
+    }
   });
 
   // Handle window closed
@@ -118,6 +122,40 @@ ipcMain.handle('close-window', () => {
 
 ipcMain.handle('is-maximized', () => {
   return mainWindow?.isMaximized() || false;
+});
+
+// External link handler
+ipcMain.handle('open-external', async (event, url: string) => {
+  try {
+    const { shell } = require('electron');
+    await shell.openExternal(url);
+    return true;
+  } catch (error) {
+    console.error('Error opening external URL:', error);
+    return false;
+  }
+});
+
+// Loading completion handler
+ipcMain.handle('loading-complete', async () => {
+  if (mainWindow) {
+    try {
+      // Load the main application
+      await mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+      
+      // Set initial theme
+      await mainWindow.webContents.executeJavaScript(`
+        document.body.classList.add('dark-theme');
+        document.body.classList.remove('light-theme');
+        document.body.style.backgroundColor = '#0f172a';
+      `);
+      
+      // Show the main window
+      mainWindow.show();
+    } catch (error) {
+      console.error('Error loading main application:', error);
+    }
+  }
 });
 
 // App lifecycle
