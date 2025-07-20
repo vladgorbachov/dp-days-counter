@@ -1,6 +1,6 @@
 {
-  "name": "@dp-days-counter/desktop",
-  "version": "1.0.3",
+  "name": "dp-days-counter",
+  "version": "1.0.4",
   "description": "Professional application for tracking Dynamic Positioning days and hours on vessels",
   "main": "dist/main/main.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "npm run build:main && npm run build:renderer",
     "build:main": "tsc -p tsconfig.main.json",
     "build:renderer": "tsc -p tsconfig.renderer.json && npm run copy:static",
-    "copy:static": "copy src\\renderer\\index.html dist\\renderer\\ & copy src\\renderer\\loading.html dist\\renderer\\ & copy src\\renderer\\styles.css dist\\renderer\\ & copy version.json dist\\renderer\\ & mkdir dist\\assets 2>$null & copy assets\\* dist\\assets\\",
+    "copy:static": "copy src\\renderer\\index.html dist\\renderer\\ & copy src\\renderer\\loading.html dist\\renderer\\ & copy src\\renderer\\styles.css dist\\renderer\\ & copy version.json dist\\renderer\\ & copy installer.nsh dist\\ & mkdir dist\\assets 2>$null & copy assets\\* dist\\assets\\",
     "build:watch": "concurrently \"npm run build:main:watch\" \"npm run build:renderer:watch\"",
     "build:main:watch": "tsc -p tsconfig.main.json --watch",
     "build:renderer:watch": "tsc -p tsconfig.renderer.json --watch",
@@ -63,7 +63,11 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": true,
+      "runAfterFinish": true,
+      "perMachine": false,
+      "include": "installer.nsh"
     }
   }
 }

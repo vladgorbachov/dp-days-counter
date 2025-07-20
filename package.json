@@ -7,13 +7,13 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=@dp-days-counter/desktop",
+    "dev": "npm run dev --workspace=dp-days-counter",
     "build": "npm run build --workspaces",
-    "build:desktop": "npm run build --workspace=@dp-days-counter/desktop",
+    "build:desktop": "npm run build --workspace=dp-days-counter",
     "build:utils": "npm run build --workspace=@dp-days-counter/utils",
     "build:ui": "npm run build --workspace=@dp-days-counter/ui",
-    "start": "npm run start --workspace=@dp-days-counter/desktop",
-    "dist": "npm run dist --workspace=@dp-days-counter/desktop",
+    "start": "npm run start --workspace=dp-days-counter",
+    "dist": "npm run dist --workspace=dp-days-counter",
     "install:all": "npm install && npm run build:utils && npm run build:ui"
   },
   "devDependencies": {
