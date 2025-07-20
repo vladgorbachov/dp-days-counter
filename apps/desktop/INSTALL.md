@@ -1,109 +1,109 @@
-# Установка DP Days Counter
+# DP Days Counter Installation
 
-## Системные требования
+## System Requirements
 
-- **Операционная система:** Windows 10 (версия 1903 или новее) или Windows 11
-- **Архитектура:** x64 (64-битная система)
-- **Свободное место:** минимум 200 МБ
-- **Интернет:** требуется для проверки обновлений
+- **Operating System:** Windows 10 (version 1903 or newer) or Windows 11
+- **Architecture:** x64 (64-bit system)
+- **Free Space:** minimum 200 MB
+- **Internet:** required for update checks
 
-## Установка
+## Installation
 
-### Автоматическая установка (рекомендуется)
+### Automatic Installation (Recommended)
 
-1. **Скачайте установочный файл:**
-   - `DP Days Counter Setup 1.0.2.exe` (72 МБ)
+1. **Download the installer:**
+   - `DP Days Counter Setup 1.0.2.exe` (75 MB)
 
-2. **Запустите установщик:**
-   - Дважды кликните на файл `.exe`
-   - Разрешите установку, если Windows Defender запросит разрешение
+2. **Run the installer:**
+   - Double-click the `.exe` file
+   - Allow installation if Windows Defender requests permission
 
-3. **Следуйте инструкциям установщика:**
-   - Выберите папку для установки (по умолчанию: `C:\Users\[Пользователь]\AppData\Local\Programs\DP Days Counter`)
-   - Выберите, создавать ли ярлыки на рабочем столе и в меню "Пуск"
-   - Нажмите "Установить"
+3. **Follow the installer instructions:**
+   - Choose installation folder (default: `C:\Users\[User]\AppData\Local\Programs\DP Days Counter`)
+   - Select whether to create shortcuts on desktop and Start menu
+   - Click "Install"
 
-4. **Завершение установки:**
-   - Дождитесь завершения установки
-   - Нажмите "Завершить"
-   - Приложение автоматически запустится
+4. **Complete installation:**
+   - Wait for installation to complete
+   - Click "Finish"
+   - Application will start automatically
 
-### Ручная установка
+### Manual Installation
 
-Если автоматическая установка не работает:
+If automatic installation doesn't work:
 
-1. **Скачайте распакованную версию:**
-   - Папка `win-unpacked` содержит все файлы приложения
+1. **Download the unpacked version:**
+   - The `win-unpacked` folder contains all application files
 
-2. **Скопируйте папку:**
-   - Скопируйте `win-unpacked` в удобное место (например, `C:\Program Files\DP Days Counter`)
+2. **Copy the folder:**
+   - Copy `win-unpacked` to a convenient location (e.g., `C:\Program Files\DP Days Counter`)
 
-3. **Создайте ярлык:**
-   - Правый клик на `DP Days Counter.exe`
-   - Выберите "Создать ярлык"
-   - Переместите ярлык на рабочий стол
+3. **Create a shortcut:**
+   - Right-click on `DP Days Counter.exe`
+   - Select "Create shortcut"
+   - Move the shortcut to desktop
 
-## Первый запуск
+## First Launch
 
-1. **Запустите приложение:**
-   - Дважды кликните на ярлык или файл `DP Days Counter.exe`
+1. **Launch the application:**
+   - Double-click the shortcut or `DP Days Counter.exe` file
 
-2. **Дождитесь загрузки:**
-   - Появится 5-секундный экран загрузки с прогресс-баром
-   - Приложение автоматически откроется
+2. **Wait for loading:**
+   - A 5-second loading screen with progress bar will appear
+   - Application will open automatically
 
-3. **Настройте приложение:**
-   - Выберите тему (светлая/темная) в настройках
-   - При необходимости проверьте обновления
+3. **Configure the application:**
+   - Choose theme (light/dark) in settings
+   - Check for updates if needed
 
-## Функции
+## Features
 
-### Основные возможности:
-- 📅 **Календарь DP дней** - отслеживание часов работы
-- 📊 **Статистика** - общее количество часов и дней
-- 🎨 **Темы** - светлая и темная темы
-- 🔄 **Обновления** - ручная проверка обновлений
-- 💾 **Автосохранение** - все данные сохраняются автоматически
+### Main capabilities:
+- 📅 **DP Days Calendar** - track working hours
+- 📊 **Statistics** - total hours and days count
+- 🎨 **Themes** - light and dark themes
+- 🔄 **Updates** - manual update checks
+- 💾 **Auto-save** - all data is saved automatically
 
-### Проверка обновлений:
-- Откройте **Настройки** (кнопка в правом нижнем углу)
-- Нажмите **"Check for Updates"**
-- Если доступна новая версия, нажмите **"Download Update"**
+### Update checking:
+- Open **Settings** (button in bottom right corner)
+- Click **"Check for Updates"**
+- If a new version is available, click **"Download Update"**
 
-## Удаление
+## Uninstallation
 
-### Через Панель управления:
-1. Откройте **Панель управления** → **Программы и компоненты**
-2. Найдите **"DP Days Counter"**
-3. Нажмите **"Удалить"**
+### Through Control Panel:
+1. Open **Control Panel** → **Programs and Features**
+2. Find **"DP Days Counter"**
+3. Click **"Uninstall"**
 
-### Ручное удаление:
-1. Удалите папку с приложением
-2. Удалите ярлыки с рабочего стола и из меню "Пуск"
-3. Удалите данные приложения: `%APPDATA%\DP Days Counter`
+### Manual removal:
+1. Delete the application folder
+2. Remove shortcuts from desktop and Start menu
+3. Delete application data: `%APPDATA%\DP Days Counter`
 
-## Устранение неполадок
+## Troubleshooting
 
-### Приложение не запускается:
-- Убедитесь, что у вас Windows 10/11 x64
-- Проверьте, что антивирус не блокирует приложение
-- Попробуйте запустить от имени администратора
+### Application won't start:
+- Make sure you have Windows 10/11 x64
+- Check that antivirus isn't blocking the application
+- Try running as administrator
 
-### Проблемы с обновлениями:
-- Проверьте подключение к интернету
-- Убедитесь, что GitHub доступен
-- Попробуйте проверить обновления позже
+### Update issues:
+- Check internet connection
+- Make sure GitHub is accessible
+- Try checking for updates later
 
-### Потеря данных:
-- Данные сохраняются в `%APPDATA%\DP Days Counter\dp_days.json`
-- Сделайте резервную копию этого файла
+### Data loss:
+- Data is saved in `%APPDATA%\DP Days Counter\dp_days.json`
+- Make a backup of this file
 
-## Поддержка
+## Support
 
-- **Веб-сайт:** https://www.delionsoft.com
+- **Website:** https://www.delionsoft.com
 - **GitHub:** https://github.com/vladgorbachov/dp-days-counter
-- **Версия:** 1.0.2
+- **Version:** 1.0.2
 
-## Лицензия
+## License
 
-MIT License - свободное использование и распространение. 
+MIT License - free use and distribution. 
