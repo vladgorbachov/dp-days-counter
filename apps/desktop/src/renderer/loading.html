@@ -173,7 +173,7 @@
                 progress += 1;
                 progressBar.style.width = progress + '%';
                 progressText.textContent = progress + '%';
-            }, 40); // 4 seconds total = 40ms per 1%
+            }, 50); // 5 seconds total = 50ms per 1%
         }
 
         function activateStep(stepIndex) {
@@ -210,15 +210,15 @@
         setTimeout(() => {
             activateStep(4);
             updateProgress(100);
-        }, 4000);
+        }, 4500);
 
-        // After 4 seconds, signal that loading is complete
+        // After 5 seconds, signal that loading is complete
         setTimeout(() => {
             // Send message to main process that loading is complete
             if (window.electronAPI) {
                 window.electronAPI.loadingComplete();
             }
-        }, 4000);
+        }, 5000);
     </script>
 </body>
 </html> 

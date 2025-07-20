@@ -1,0 +1,15 @@
+{
+  "version": "1.0.2",
+  "releaseDate": "2025-01-21",
+  "downloadUrl": "https://github.com/vladgorbachov/dp-days-counter/releases/latest",
+  "changelog": [
+    "Fixed startup flickering with 5-second loading screen",
+    "Removed automatic update check on startup",
+    "Added professional loading screen with progress bar",
+    "Fixed external link opening functionality",
+    "Improved app initialization and theme handling",
+    "Added proper error handling and fallbacks"
+  ],
+  "minVersion": "1.0.0",
+  "forceUpdate": false
+} 

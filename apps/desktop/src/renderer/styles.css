@@ -132,9 +132,6 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-app-region: drag;
-  /* Smooth fade in to prevent flashing */
-  opacity: 0;
-  transition: opacity 1s ease;
 }
 
 /* Numbers should use system font */

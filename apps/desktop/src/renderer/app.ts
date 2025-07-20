@@ -22,6 +22,8 @@ interface DPDays {
 
 interface AppSettings {
   theme: 'light' | 'dark';
+  lastUpdateCheck?: string;
+  autoUpdateCheck?: boolean;
 }
 
 interface CalendarDay {
@@ -148,7 +150,7 @@ class DPDaysCounter {
 
     // Update button
     document.getElementById('checkUpdatesBtn')?.addEventListener('click', () => {
-      alert('You are using the latest version!');
+      this.checkForUpdates();
     });
 
     // Settings modal controls
@@ -727,6 +729,195 @@ class DPDaysCounter {
     };
     
     setupLink();
+  }
+
+  private async checkForUpdates(): Promise<void> {
+    try {
+      const updateBtn = document.getElementById('checkUpdatesBtn');
+      if (updateBtn) {
+        updateBtn.textContent = 'Checking...';
+        updateBtn.setAttribute('disabled', 'true');
+      }
+
+      // Get current version from package.json
+      const currentVersion = '1.0.2'; // This should be read from package.json
+      
+      // Fetch latest version info from GitHub
+      const response = await fetch('https://raw.githubusercontent.com/vladgorbachov/dp-days-counter/main/apps/desktop/version.json');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch update info');
+      }
+      
+      const updateInfo = await response.json();
+      
+      // Update last check time
+      this.settings.lastUpdateCheck = new Date().toISOString();
+      await this.saveData();
+      
+      if (this.compareVersions(currentVersion, updateInfo.version) < 0) {
+        // New version available
+        this.showUpdateAvailableModal(updateInfo);
+      } else {
+        // Already up to date
+        this.showUpToDateMessage();
+      }
+    } catch (error) {
+      console.error('Error checking for updates:', error);
+      this.showUpdateError();
+    } finally {
+      const updateBtn = document.getElementById('checkUpdatesBtn');
+      if (updateBtn) {
+        updateBtn.textContent = 'Check for Updates';
+        updateBtn.removeAttribute('disabled');
+      }
+    }
+  }
+
+  private compareVersions(v1: string, v2: string): number {
+    const parts1 = v1.split('.').map(Number);
+    const parts2 = v2.split('.').map(Number);
+    
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+      const part1 = parts1[i] || 0;
+      const part2 = parts2[i] || 0;
+      
+      if (part1 < part2) return -1;
+      if (part1 > part2) return 1;
+    }
+    
+    return 0;
+  }
+
+  private showUpdateAvailableModal(updateInfo: any): void {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay visible';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Update Available</h3>
+          <button class="modal-close" id="updateModalClose">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="margin-bottom: 20px;">
+            <strong>Version ${updateInfo.version}</strong> is now available!
+          </div>
+          <div style="margin-bottom: 20px;">
+            <strong>What's new:</strong>
+            <ul style="margin-top: 10px; padding-left: 20px;">
+              ${updateInfo.changelog.map((item: string) => `<li>${item}</li>`).join('')}
+            </ul>
+          </div>
+          <div style="font-size: 12px; color: #64748b;">
+            Released: ${updateInfo.releaseDate}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn save-btn" id="downloadUpdate">Download Update</button>
+          <button class="modal-btn cancel-btn" id="updateLater">Later</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Event listeners
+    document.getElementById('updateModalClose')?.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    document.getElementById('updateLater')?.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    document.getElementById('downloadUpdate')?.addEventListener('click', () => {
+      window.electronAPI.openExternal(updateInfo.downloadUrl);
+      document.body.removeChild(modal);
+    });
+  }
+
+  private showUpToDateMessage(): void {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay visible';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Up to Date</h3>
+          <button class="modal-close" id="upToDateModalClose">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
+            <div style="font-size: 18px; margin-bottom: 10px;">You're using the latest version!</div>
+            <div style="font-size: 14px; color: #64748b;">
+              DP Days Counter is up to date with all the latest features and improvements.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn save-btn" id="upToDateOk">OK</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Event listeners
+    document.getElementById('upToDateModalClose')?.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    document.getElementById('upToDateOk')?.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+  }
+
+  private showUpdateError(): void {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay visible';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Update Check Failed</h3>
+          <button class="modal-close" id="errorModalClose">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+            <div style="font-size: 18px; margin-bottom: 10px;">Unable to check for updates</div>
+            <div style="font-size: 14px; color: #64748b;">
+              Please check your internet connection and try again later.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn save-btn" id="errorOk">OK</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Event listeners
+    document.getElementById('errorModalClose')?.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+    
+    document.getElementById('errorOk')?.addEventListener('click', () => {
+      document.body.removeChild(modal);
+    });
+  }
+
+  private shouldCheckForUpdates(): boolean {
+    if (!this.settings.lastUpdateCheck) {
+      return true;
+    }
+    
+    const lastCheck = new Date(this.settings.lastUpdateCheck);
+    const now = new Date();
+    const daysSinceLastCheck = (now.getTime() - lastCheck.getTime()) / (1000 * 60 * 60 * 24);
+    
+    return daysSinceLastCheck >= 30; // Check once per month
   }
 
 

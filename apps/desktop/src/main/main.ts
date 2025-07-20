@@ -35,10 +35,10 @@ function createWindow(): void {
     show: false // Don't show until ready
   });
 
-  // First load the loading screen
+  // Load and show loading screen immediately
   mainWindow.loadFile(path.join(__dirname, '../renderer/loading.html'));
-
-  // Show loading window immediately
+  
+  // Show window immediately when loading screen is ready
   mainWindow.once('ready-to-show', () => {
     if (mainWindow) {
       mainWindow.show();
@@ -148,6 +148,7 @@ ipcMain.handle('loading-complete', async () => {
         document.body.classList.add('dark-theme');
         document.body.classList.remove('light-theme');
         document.body.style.backgroundColor = '#0f172a';
+        document.body.style.opacity = '1';
       `);
       
       // Show the main window
