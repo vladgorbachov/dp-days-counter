@@ -740,7 +740,7 @@ class DPDaysCounter {
       }
 
       // Get current version from package.json
-      const currentVersion = '1.0.2'; // This should be read from package.json
+      const currentVersion = '1.0.3'; // This should be read from package.json
       
       // Fetch latest version info from GitHub
       const response = await fetch('https://raw.githubusercontent.com/vladgorbachov/dp-days-counter/main/apps/desktop/version.json');

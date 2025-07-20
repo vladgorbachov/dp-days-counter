@@ -1,8 +1,9 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "releaseDate": "2025-07-21",
   "downloadUrl": "https://github.com/vladgorbachov/dp-days-counter/releases/latest",
   "changelog": [
+    "Clean installer without test data",
     "Fixed startup flickering with 5-second loading screen",
     "Removed automatic update check on startup",
     "Added professional loading screen with progress bar",
