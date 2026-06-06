@@ -200,11 +200,27 @@
             setTimeout(() => { activateStep(s.step); rampProgress(s.target); }, s.at);
         }
 
-        setTimeout(() => {
-            if (window.electronAPI && typeof window.electronAPI.loadingComplete === 'function') {
-                window.electronAPI.loadingComplete();
+        // Navigate to the main window directly. Going via `location.replace`
+        // removes the dependency on IPC/preload — even if the preload script
+        // failed to expose `electronAPI`, the loading screen will still hand
+        // off to index.html. The legacy IPC handler is kept on the main side
+        // for older builds but is no longer required.
+        function handoffToMain() {
+            try {
+                location.replace('index.html');
+            } catch (err) {
+                // Last resort: hard reload.
+                location.href = 'index.html';
             }
-        }, TOTAL_DURATION_MS);
+        }
+
+        setTimeout(handoffToMain, TOTAL_DURATION_MS);
+
+        // Belt-and-braces: if for any reason the navigation didn't happen
+        // 1.5 s after the scheduled handoff, force it again.
+        setTimeout(() => {
+            if (location.pathname.endsWith('loading.html')) handoffToMain();
+        }, TOTAL_DURATION_MS + 1500);
     </script>
 </body>
 </html>

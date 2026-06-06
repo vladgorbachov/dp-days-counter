@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import log from 'electron-log';
 import {
   AppSettings,
   DPDays,
@@ -8,6 +9,12 @@ import {
   isValidSettings
 } from './shared-types';
 import { UpdaterService } from './updater';
+
+// File logger: writes to %APPDATA%\DP Days Counter\logs\main.log on Windows.
+// Useful for diagnosing first-run issues that users can email back to us.
+log.transports.file.level = 'info';
+log.transports.console.level = 'info';
+log.info(`Starting DP Days Counter ${app.getVersion()} on ${process.platform}`);
 
 let mainWindow: BrowserWindow | null = null;
 let updater: UpdaterService | null = null;
@@ -73,11 +80,22 @@ function createWindow(): void {
     show: false
   });
 
-  mainWindow.loadFile(path.join(__dirname, '../renderer/loading.html'));
+  const loadingPath = path.join(__dirname, '../renderer/loading.html');
+  log.info(`Loading splash from ${loadingPath}`);
+  mainWindow.loadFile(loadingPath).catch((err) => log.error('loadFile splash failed:', err));
 
   // Single show, exactly when first paint is ready: no white flash, no double show.
   mainWindow.once('ready-to-show', () => {
+    log.info('Main window ready-to-show');
     mainWindow?.show();
+  });
+
+  mainWindow.webContents.on('did-fail-load', (_e, code, desc, url) => {
+    log.error(`did-fail-load code=${code} desc=${desc} url=${url}`);
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    log.info(`did-finish-load url=${mainWindow?.webContents.getURL()}`);
   });
 
   mainWindow.on('closed', () => {
@@ -159,12 +177,15 @@ ipcMain.handle('open-external', async (_event, url: unknown): Promise<boolean> =
 
 ipcMain.handle('app-version', () => app.getVersion());
 
+// Legacy compatibility: older builds of loading.html relied on this IPC channel
+// to navigate to the main window. New builds navigate via `location.replace`,
+// so this handler is now a no-op kept only to keep older renderers working.
 ipcMain.handle('loading-complete', async () => {
   if (!mainWindow) return;
   try {
     await mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   } catch (error) {
-    console.error('Error loading main application:', error);
+    log.error('Error loading main application via legacy IPC:', error);
   }
 });
 
@@ -182,16 +203,21 @@ app.on('activate', () => {
   }
 });
 
-// Hard-block any in-app navigation that escapes the file:// origin.
+// Hard-block any in-app navigation that escapes the file:// scheme.
+// NOTE: a file:// URL has `origin === "null"` (a literal string), not "file://",
+// so we compare on `protocol` instead — the previous version blocked legitimate
+// in-app navigation between bundled HTML pages.
 app.on('web-contents-created', (_event, contents) => {
   contents.on('will-navigate', (event, navigationUrl) => {
     try {
       const parsedUrl = new URL(navigationUrl);
-      if (parsedUrl.origin !== 'file://') {
+      if (parsedUrl.protocol !== 'file:') {
         event.preventDefault();
+        log.warn(`Blocked navigation to non-file URL: ${navigationUrl}`);
       }
-    } catch {
+    } catch (error) {
       event.preventDefault();
+      log.warn(`Blocked invalid navigation URL: ${navigationUrl}`, error);
     }
   });
 });

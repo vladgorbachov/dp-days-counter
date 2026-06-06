@@ -1,6 +1,6 @@
 {
   "name": "dp-days-counter",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Professional application for tracking Dynamic Positioning days and hours on vessels",
   "main": "dist/main/main.js",
   "scripts": {
