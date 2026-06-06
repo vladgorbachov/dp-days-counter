@@ -27,9 +27,25 @@
                 <span class="app-title">DP DAYS COUNTER</span>
             </div>
             <div class="title-bar-right">
-                <button class="title-bar-btn" id="minimizeBtn" aria-label="Minimize">🗕</button>
-                <button class="title-bar-btn" id="maximizeBtn" aria-label="Maximize">🗖</button>
-                <button class="title-bar-btn close-btn" id="closeBtn" aria-label="Close">✕</button>
+                <button type="button" class="title-bar-btn" id="minimizeBtn" aria-label="Minimize" title="Minimize">
+                    <svg class="win-icon" viewBox="0 0 10 1" width="10" height="1" aria-hidden="true">
+                        <rect width="10" height="1" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button type="button" class="title-bar-btn" id="maximizeBtn" aria-label="Maximize" title="Maximize">
+                    <svg class="win-icon win-icon-maximize" viewBox="0 0 10 10" width="10" height="10" aria-hidden="true">
+                        <rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"/>
+                    </svg>
+                    <svg class="win-icon win-icon-restore" viewBox="0 0 10 10" width="10" height="10" aria-hidden="true">
+                        <rect x="2.5" y="0.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1"/>
+                        <rect x="0.5" y="2.5" width="7" height="7" fill="var(--bg)" stroke="currentColor" stroke-width="1"/>
+                    </svg>
+                </button>
+                <button type="button" class="title-bar-btn close-btn" id="closeBtn" aria-label="Close" title="Close">
+                    <svg class="win-icon" viewBox="0 0 10 10" width="10" height="10" aria-hidden="true">
+                        <path d="M1 1 L9 9 M9 1 L1 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                </button>
             </div>
         </div>
 

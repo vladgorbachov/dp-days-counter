@@ -155,14 +155,29 @@ class DPDaysCounter {
 
   /* -------------------- Event wiring -------------------- */
   private setupEventListeners(): void {
-    document.getElementById('minimizeBtn')?.addEventListener('click', () => {
+    if (!window.electronAPI) {
+      showToast('Application bridge failed to load. Restart the app.', 'error');
+      return;
+    }
+
+    document.getElementById('minimizeBtn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       void window.electronAPI.minimizeWindow();
     });
-    document.getElementById('maximizeBtn')?.addEventListener('click', () => {
+    document.getElementById('maximizeBtn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       void window.electronAPI.maximizeWindow();
     });
-    document.getElementById('closeBtn')?.addEventListener('click', () => {
+    document.getElementById('closeBtn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       void window.electronAPI.closeWindow();
+    });
+
+    document.querySelector('.title-bar-left')?.addEventListener('dblclick', () => {
+      void window.electronAPI.maximizeWindow();
     });
 
     document.getElementById('prevMonthBtn')?.addEventListener('click', () => {
@@ -655,21 +670,16 @@ class DPDaysCounter {
   }
 
   /**
-   * Update the maximize button glyph and ARIA label depending on whether the
-   * window is currently maximized. Glyphs are box-drawing characters that
-   * mirror Windows' own title bar:
-   *   - 🗖 (U+1F5D6)  "maximize"
-   *   - 🗗 (U+1F5D7)  "restore down"
+   * Toggle the maximize/restore SVG icons (see index.html + styles.css).
    */
   private applyWindowState(state: WindowState): void {
     const btn = document.getElementById('maximizeBtn');
     if (!btn) return;
+    btn.classList.toggle('is-maximized', state.isMaximized);
     if (state.isMaximized) {
-      btn.textContent = '\u{1F5D7}';
       btn.setAttribute('aria-label', 'Restore');
       btn.setAttribute('title', 'Restore');
     } else {
-      btn.textContent = '\u{1F5D6}';
       btn.setAttribute('aria-label', 'Maximize');
       btn.setAttribute('title', 'Maximize');
     }
