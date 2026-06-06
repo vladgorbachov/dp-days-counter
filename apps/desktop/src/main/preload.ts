@@ -1,41 +1,44 @@
-import { contextBridge, ipcRenderer, shell } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
+import {
+  AppSettings,
+  DPDays,
+  UPDATE_CHECK_CHANNEL,
+  UPDATE_DOWNLOAD_CHANNEL,
+  UPDATE_EVENT_CHANNEL,
+  UPDATE_GET_STATE_CHANNEL,
+  UPDATE_INSTALL_CHANNEL,
+  UpdateState
+} from './shared-types';
 
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld('electronAPI', {
-  // Data management
-  loadDPDays: () => ipcRenderer.invoke('load-dp-days'),
-  saveDPDays: (data: Record<string, number>) => ipcRenderer.invoke('save-dp-days', data),
-  loadSettings: () => ipcRenderer.invoke('load-settings'),
-  saveSettings: (data: any) => ipcRenderer.invoke('save-settings', data),
-  
-  // Window controls
-  minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
-  maximizeWindow: () => ipcRenderer.invoke('maximize-window'),
-  closeWindow: () => ipcRenderer.invoke('close-window'),
-  isMaximized: () => ipcRenderer.invoke('is-maximized'),
-  
-  // External links
-  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
-  
-  // Loading completion
-  loadingComplete: () => ipcRenderer.invoke('loading-complete')
-});
+type UpdateListener = (state: UpdateState) => void;
 
-// Type definitions for the exposed API
-declare global {
-  interface Window {
-    electronAPI: {
-        loadDPDays: () => Promise<Record<string, number>>;
-  saveDPDays: (data: Record<string, number>) => Promise<boolean>;
-      loadSettings: () => Promise<any>;
-      saveSettings: (data: any) => Promise<boolean>;
-      minimizeWindow: () => Promise<void>;
-      maximizeWindow: () => Promise<void>;
-      closeWindow: () => Promise<void>;
-      isMaximized: () => Promise<boolean>;
-      openExternal: (url: string) => Promise<void>;
-      loadingComplete: () => Promise<void>;
-    };
+const electronAPI = {
+  loadDPDays: (): Promise<DPDays> => ipcRenderer.invoke('load-dp-days'),
+  saveDPDays: (data: DPDays): Promise<boolean> => ipcRenderer.invoke('save-dp-days', data),
+  loadSettings: (): Promise<AppSettings> => ipcRenderer.invoke('load-settings'),
+  saveSettings: (data: AppSettings): Promise<boolean> => ipcRenderer.invoke('save-settings', data),
+
+  minimizeWindow: (): Promise<void> => ipcRenderer.invoke('minimize-window'),
+  maximizeWindow: (): Promise<void> => ipcRenderer.invoke('maximize-window'),
+  closeWindow: (): Promise<void> => ipcRenderer.invoke('close-window'),
+  isMaximized: (): Promise<boolean> => ipcRenderer.invoke('is-maximized'),
+
+  openExternal: (url: string): Promise<boolean> => ipcRenderer.invoke('open-external', url),
+  loadingComplete: (): Promise<void> => ipcRenderer.invoke('loading-complete'),
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke('app-version'),
+
+  // Updates --------------------------------------------------------------
+  checkForUpdates: (): Promise<UpdateState> => ipcRenderer.invoke(UPDATE_CHECK_CHANNEL),
+  downloadUpdate: (): Promise<UpdateState> => ipcRenderer.invoke(UPDATE_DOWNLOAD_CHANNEL),
+  installUpdate: (): Promise<boolean> => ipcRenderer.invoke(UPDATE_INSTALL_CHANNEL),
+  getUpdateState: (): Promise<UpdateState> => ipcRenderer.invoke(UPDATE_GET_STATE_CHANNEL),
+  onUpdateState: (listener: UpdateListener): (() => void) => {
+    const wrapped = (_event: unknown, state: UpdateState) => listener(state);
+    ipcRenderer.on(UPDATE_EVENT_CHANNEL, wrapped);
+    return () => ipcRenderer.removeListener(UPDATE_EVENT_CHANNEL, wrapped);
   }
-} 
+};
+
+contextBridge.exposeInMainWorld('electronAPI', electronAPI);
+
+export type ElectronAPI = typeof electronAPI;

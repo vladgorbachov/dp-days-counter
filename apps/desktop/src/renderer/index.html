@@ -3,7 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark light">
     <title>DP Days Counter</title>
+    <!--
+      Inline pre-paint background prevents the white flash that happens between
+      navigation from loading.html and styles.css being parsed. The colour matches
+      BrowserWindow's backgroundColor and the dark theme background.
+    -->
+    <style id="boot-style">
+      html, body { background: #0a0a0a; color: #f5e9c8; margin: 0; padding: 0; }
+      body.boot-light { background: #faf7ff; color: #1a0b2e; }
+      body { opacity: 0; transition: opacity 0.18s ease; }
+      body.ready { opacity: 1; }
+    </style>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="dark-theme">
@@ -15,40 +27,34 @@
                 <span class="app-title">DP DAYS COUNTER</span>
             </div>
             <div class="title-bar-right">
-                <button class="title-bar-btn" id="minimizeBtn">🗕</button>
-                <button class="title-bar-btn" id="maximizeBtn">🗖</button>
-                <button class="title-bar-btn close-btn" id="closeBtn">✕</button>
+                <button class="title-bar-btn" id="minimizeBtn" aria-label="Minimize">🗕</button>
+                <button class="title-bar-btn" id="maximizeBtn" aria-label="Maximize">🗖</button>
+                <button class="title-bar-btn close-btn" id="closeBtn" aria-label="Close">✕</button>
             </div>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Calendar Container -->
             <div class="calendar-container">
-                <!-- Calendar Header -->
                 <div class="calendar-header">
-                    <button class="nav-btn" id="prevMonthBtn">‹</button>
+                    <button class="nav-btn" id="prevMonthBtn" aria-label="Previous month">‹</button>
                     <h2 class="current-month" id="currentMonthText">JANUARY 2024</h2>
-                    <button class="nav-btn" id="nextMonthBtn">›</button>
+                    <button class="nav-btn" id="nextMonthBtn" aria-label="Next month">›</button>
                 </div>
 
-                <!-- Weekdays Header -->
+                <!-- Week starts on Monday -->
                 <div class="weekdays-header">
-                    <div class="weekday">Sun</div>
                     <div class="weekday">Mon</div>
                     <div class="weekday">Tue</div>
                     <div class="weekday">Wed</div>
                     <div class="weekday">Thu</div>
                     <div class="weekday">Fri</div>
                     <div class="weekday">Sat</div>
+                    <div class="weekday">Sun</div>
                 </div>
 
-                <!-- Calendar Grid -->
-                <div class="calendar-grid" id="calendarGrid">
-                    <!-- Calendar days will be generated here -->
-                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
 
-                <!-- Statistics Footer -->
                 <div class="statistics-footer">
                     <div class="stat-card">
                         <div class="stat-label">Month Hours</div>
@@ -65,37 +71,34 @@
         <!-- Static Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-content">
-                <h3 class="sidebar-title">Get Your DP Days & Hours</h3>
-                
-                <!-- Date Range Selection -->
+                <h3 class="sidebar-title">Get Your DP Days &amp; Hours</h3>
+
                 <div class="date-range-section">
                     <div class="date-input-group">
-                        <label class="date-label">Start Date</label>
+                        <label class="date-label" for="startDateInput">Start Date</label>
                         <input type="text" class="date-input" id="startDateInput" placeholder="dd-mm-yyyy" readonly>
                         <div class="date-picker" id="startDatePicker"></div>
                     </div>
-                    
+
                     <div class="date-input-group">
-                        <label class="date-label">End Date</label>
+                        <label class="date-label" for="endDateInput">End Date</label>
                         <input type="text" class="date-input" id="endDateInput" placeholder="dd-mm-yyyy" readonly>
                         <div class="date-picker" id="endDatePicker"></div>
                     </div>
                 </div>
 
-                <!-- Results Section -->
                 <div class="results-section">
                     <div class="result-group">
                         <label class="result-label">Total Days</label>
                         <div class="result-value" id="totalDaysResult">0</div>
                     </div>
-                    
+
                     <div class="result-group">
                         <label class="result-label">Total Hours</label>
                         <div class="result-value" id="totalHoursResult">0</div>
                     </div>
                 </div>
 
-                <!-- Settings Button -->
                 <div class="settings-section">
                     <button class="settings-btn" id="settingsBtn">
                         <span class="settings-icon">⚙</span>
@@ -110,7 +113,7 @@
             <div class="modal-content settings-modal">
                 <div class="modal-header">
                     <h3>Settings</h3>
-                    <button class="modal-close" id="settingsModalCloseBtn">✕</button>
+                    <button class="modal-close" id="settingsModalCloseBtn" aria-label="Close">✕</button>
                 </div>
                 <div class="modal-body">
                     <div class="setting-group">
@@ -124,6 +127,15 @@
                     <div class="setting-group">
                         <label class="setting-label">Updates</label>
                         <button class="update-btn" id="checkUpdatesBtn">Check for Updates</button>
+                        <div class="update-status" id="updateStatus"></div>
+                        <div class="update-progress" id="updateProgressContainer" style="display:none;">
+                            <div class="update-progress-bar" id="updateProgressBar"></div>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label class="setting-label">Version</label>
+                        <div class="copyright-text" id="appVersionText">—</div>
                     </div>
 
                     <div class="copyright-section">
@@ -143,16 +155,16 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Enter DP Hours</h3>
-                <button class="modal-close" id="modalCloseBtn">✕</button>
+                <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
             </div>
             <div class="modal-body">
                 <div class="date-display" id="modalDateDisplay">Monday, January 1, 2024</div>
                 <div class="hours-input-group">
-                    <label>Hours (0-24):</label>
+                    <label for="hoursInput">Hours (0-24):</label>
                     <div class="hours-controls">
-                        <button class="hours-btn" id="decreaseBtn">−</button>
+                        <button class="hours-btn" id="decreaseBtn" aria-label="Decrease">−</button>
                         <input type="text" class="hours-input" id="hoursInput" value="0" maxlength="2">
-                        <button class="hours-btn" id="increaseBtn">+</button>
+                        <button class="hours-btn" id="increaseBtn" aria-label="Increase">+</button>
                     </div>
                 </div>
             </div>
@@ -163,6 +175,9 @@
         </div>
     </div>
 
+    <!-- Toast for in-app messages (replaces blocking alert()) -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <!-- Context Menu -->
     <div class="context-menu" id="contextMenu">
         <div class="context-menu-item" id="resetDateItem">Reset</div>
@@ -170,4 +185,4 @@
 
     <script type="module" src="app.js"></script>
 </body>
-</html> 
+</html>

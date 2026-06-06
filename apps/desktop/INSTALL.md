@@ -12,7 +12,7 @@
 ### Automatic Installation (Recommended)
 
 1. **Download the installer:**
-   - `DP Days Counter Setup 1.0.2.exe` (75 MB)
+   - `DP Days Counter Setup 2.0.0.exe`
 
 2. **Run the installer:**
    - Double-click the `.exe` file
@@ -49,7 +49,7 @@ If automatic installation doesn't work:
    - Double-click the shortcut or `DP Days Counter.exe` file
 
 2. **Wait for loading:**
-   - A 5-second loading screen with progress bar will appear
+   - A 2.5-second loading screen with progress bar will appear
    - Application will open automatically
 
 3. **Configure the application:**
@@ -66,9 +66,11 @@ If automatic installation doesn't work:
 - 💾 **Auto-save** - all data is saved automatically
 
 ### Update checking:
-- Open **Settings** (button in bottom right corner)
-- Click **"Check for Updates"**
-- If a new version is available, click **"Download Update"**
+- Open **Settings** (button in the sidebar)
+- Click **"Check for Updates"** — the app uses electron-updater to check GitHub Releases
+- When a new version is available, click **"Download"** — the update downloads in the background
+- When the download completes, click **"Install & Restart"** — the app installs and relaunches automatically
+- Your data (DP days, settings) is preserved across updates
 
 ## Uninstallation
 
@@ -102,7 +104,7 @@ If automatic installation doesn't work:
 
 - **Website:** https://www.delionsoft.com
 - **GitHub:** https://github.com/vladgorbachov/dp-days-counter
-- **Version:** 1.0.2
+- **Version:** 2.0.0
 
 ## License
 

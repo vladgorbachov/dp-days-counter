@@ -3,18 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
     <title>DP Days Counter - Loading</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @font-face {
+            font-family: 'Orbitron';
+            font-style: normal;
+            font-weight: 400 900;
+            font-display: block;
+            src: url('../assets/fonts/orbitron-latin.woff2') format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC,
+                           U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+                           U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+                           U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            background: #0a0a0a;
+            color: #f5e9c8;
         }
 
         body {
-            font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f1f5f9;
+            font-family: 'Orbitron', 'Segoe UI', Tahoma, sans-serif;
+            background: radial-gradient(ellipse at top, #1a1408 0%, #0a0a0a 60%, #050505 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -23,97 +36,87 @@
             user-select: none;
         }
 
-        .loading-container {
-            text-align: center;
-            max-width: 400px;
-            padding: 40px;
-        }
+        .loading-container { text-align: center; max-width: 420px; padding: 40px; }
 
         .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 30px;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            border-radius: 20px;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 28px;
+            background: linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #f4d03f 100%);
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
-            color: white;
-            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+            font-size: 44px;
+            color: #0a0a0a;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.35);
             animation: pulse 2s ease-in-out infinite;
         }
 
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50%      { transform: scale(1.05); }
         }
 
         .app-title {
             font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #f4d03f 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .loading-text {
-            font-size: 14px;
-            color: #94a3b8;
-            margin-bottom: 30px;
+            font-size: 13px;
+            color: #a8956b;
+            margin-bottom: 28px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
 
         .progress-container {
-            background: rgba(30, 41, 59, 0.5);
+            background: rgba(31, 26, 16, 0.8);
             border-radius: 10px;
             padding: 3px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(99, 102, 241, 0.2);
+            margin-bottom: 18px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
         }
 
         .progress-bar {
             height: 6px;
-            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(90deg, #b8860b 0%, #d4af37 50%, #f4d03f 100%);
             border-radius: 8px;
             width: 0%;
-            transition: width 0.3s ease;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+            transition: width 0.2s ease;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
         }
 
         .progress-text {
             font-size: 12px;
-            color: #64748b;
+            color: #a8956b;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
+            margin-bottom: 18px;
         }
 
         .loading-steps {
-            margin-top: 20px;
+            margin-top: 18px;
             font-size: 11px;
-            color: #64748b;
+            color: #6f5f3a;
             text-align: left;
         }
 
         .step {
-            margin-bottom: 8px;
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
+            margin-bottom: 7px;
+            opacity: 0.45;
+            transition: opacity 0.25s ease, color 0.25s ease;
         }
 
-        .step.active {
-            opacity: 1;
-            color: #6366f1;
-        }
-
-        .step.completed {
-            opacity: 0.8;
-            color: #10b981;
-        }
+        .step.active    { opacity: 1; color: #f4d03f; }
+        .step.completed { opacity: 0.85; color: #a8956b; }
 
         .company-info {
             position: absolute;
@@ -121,9 +124,9 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 10px;
-            color: #64748b;
+            color: #6f5f3a;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
     </style>
 </head>
@@ -132,13 +135,13 @@
         <div class="logo">⚓</div>
         <h1 class="app-title">DP DAYS COUNTER</h1>
         <p class="loading-text">Initializing Application</p>
-        
+
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
-        
+
         <div class="progress-text" id="progressText">0%</div>
-        
+
         <div class="loading-steps">
             <div class="step" id="step1">Loading application core...</div>
             <div class="step" id="step2">Initializing calendar system...</div>
@@ -151,6 +154,10 @@
     <div class="company-info">DeLIon Software</div>
 
     <script>
+        // Loading screen is purely decorative — total runtime cut from 5.0s to 2.5s.
+        const TOTAL_DURATION_MS = 2500;
+        const PROGRESS_TICK_MS = 25;
+
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
         const steps = [
@@ -161,64 +168,43 @@
             document.getElementById('step5')
         ];
 
-        let currentStep = 0;
         let progress = 0;
 
-        function updateProgress(targetProgress) {
+        function rampProgress(target) {
             const interval = setInterval(() => {
-                if (progress >= targetProgress) {
-                    clearInterval(interval);
-                    return;
-                }
+                if (progress >= target) { clearInterval(interval); return; }
                 progress += 1;
                 progressBar.style.width = progress + '%';
                 progressText.textContent = progress + '%';
-            }, 50); // 5 seconds total = 50ms per 1%
+            }, PROGRESS_TICK_MS);
         }
 
-        function activateStep(stepIndex) {
-            if (stepIndex > 0) {
-                steps[stepIndex - 1].classList.remove('active');
-                steps[stepIndex - 1].classList.add('completed');
+        function activateStep(index) {
+            if (index > 0) {
+                steps[index - 1].classList.remove('active');
+                steps[index - 1].classList.add('completed');
             }
-            if (stepIndex < steps.length) {
-                steps[stepIndex].classList.add('active');
-            }
+            if (index < steps.length) steps[index].classList.add('active');
         }
 
-        // Start loading sequence
-        setTimeout(() => {
-            activateStep(0);
-            updateProgress(20);
-        }, 500);
+        // Step schedule mirrors the original 5 stages but compressed 2x.
+        const schedule = [
+            { at: 250,  step: 0, target: 20  },
+            { at: 750,  step: 1, target: 40  },
+            { at: 1250, step: 2, target: 60  },
+            { at: 1750, step: 3, target: 80  },
+            { at: 2250, step: 4, target: 100 }
+        ];
+
+        for (const s of schedule) {
+            setTimeout(() => { activateStep(s.step); rampProgress(s.target); }, s.at);
+        }
 
         setTimeout(() => {
-            activateStep(1);
-            updateProgress(40);
-        }, 1500);
-
-        setTimeout(() => {
-            activateStep(2);
-            updateProgress(60);
-        }, 2500);
-
-        setTimeout(() => {
-            activateStep(3);
-            updateProgress(80);
-        }, 3500);
-
-        setTimeout(() => {
-            activateStep(4);
-            updateProgress(100);
-        }, 4500);
-
-        // After 5 seconds, signal that loading is complete
-        setTimeout(() => {
-            // Send message to main process that loading is complete
-            if (window.electronAPI) {
+            if (window.electronAPI && typeof window.electronAPI.loadingComplete === 'function') {
                 window.electronAPI.loadingComplete();
             }
-        }, 5000);
+        }, TOTAL_DURATION_MS);
     </script>
 </body>
-</html> 
+</html>
