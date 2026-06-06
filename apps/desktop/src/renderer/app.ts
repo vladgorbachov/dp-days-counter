@@ -17,8 +17,6 @@ interface CalendarDay {
  * off-by-one day in negative timezones. parseLocalDate() rebuilds a
  * Date in the local TZ so date keys round-trip cleanly.
  * ------------------------------------------------------------------ */
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 function formatDate(date: Date): string {
   const y = date.getFullYear();
   const m = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -197,6 +195,7 @@ class DPDaysCounter {
     document.getElementById('checkUpdatesBtn')?.addEventListener('click', () => {
       void this.handleCheckForUpdates();
     });
+    this.setupUpdateStatusActions();
 
     document.getElementById('settingsBtn')?.addEventListener('click', () => this.showSettingsModal());
     document.getElementById('settingsModalCloseBtn')?.addEventListener('click', () => this.hideSettingsModal());
@@ -446,7 +445,17 @@ class DPDaysCounter {
   /* -------------------- Settings modal -------------------- */
   private showSettingsModal(): void {
     document.getElementById('settingsModal')?.classList.add('visible');
-    void window.electronAPI.getUpdateState().then((state) => this.renderUpdateState(state));
+    void window.electronAPI.getUpdateState().then((state) => {
+      if (!this.shouldShowUpdateState(state)) return;
+      this.renderUpdateState(state);
+    });
+  }
+
+  /** Background update failures must not break the Settings modal. */
+  private shouldShowUpdateState(state: UpdateState): boolean {
+    if (state.status === 'idle') return false;
+    if (state.status === 'error' && !state.userInitiated) return false;
+    return true;
   }
 
   private hideSettingsModal(): void {
@@ -560,10 +569,7 @@ class DPDaysCounter {
 
   private selectDateFromPicker(dateString: string, type: 'start' | 'end'): void {
     const date = parseLocalDate(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const formatted = `${day}-${month}-${year}`;
+    const formatted = this.formatDisplayDate(date);
 
     if (type === 'start') {
       this.startDate = date;
@@ -582,7 +588,31 @@ class DPDaysCounter {
       this.outsideClickHandler = null;
     }
 
+    this.normalizeDateRange();
     this.calculateDateRangeResults();
+  }
+
+  /** Keep start/end in chronological order and sync visible inputs. */
+  private normalizeDateRange(): void {
+    if (!this.startDate || !this.endDate) return;
+    if (this.startDate.getTime() <= this.endDate.getTime()) return;
+
+    const tmp = this.startDate;
+    this.startDate = this.endDate;
+    this.endDate = tmp;
+
+    const startInput = document.getElementById('startDateInput') as HTMLInputElement | null;
+    const endInput = document.getElementById('endDateInput') as HTMLInputElement | null;
+    if (startInput) startInput.value = this.formatDisplayDate(this.startDate);
+    if (endInput) endInput.value = this.formatDisplayDate(this.endDate);
+    showToast('Start date was after end date — range swapped.', 'info');
+  }
+
+  private formatDisplayDate(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   }
 
   private calculateDateRangeResults(): void {
@@ -599,7 +629,7 @@ class DPDaysCounter {
         totalDays += 1;
         totalHours += hours;
       }
-      cursor.setTime(cursor.getTime() + DAY_MS);
+      cursor.setDate(cursor.getDate() + 1);
     }
 
     const totalDaysResult = document.getElementById('totalDaysResult');
@@ -647,6 +677,7 @@ class DPDaysCounter {
     if (typeof window.electronAPI?.onUpdateState !== 'function') return;
     if (this.updateUnsubscribe) this.updateUnsubscribe();
     this.updateUnsubscribe = window.electronAPI.onUpdateState((state) => {
+      if (!this.shouldShowUpdateState(state)) return;
       this.renderUpdateState(state);
     });
   }
@@ -706,6 +737,34 @@ class DPDaysCounter {
     }
   }
 
+  /** One delegated listener avoids duplicate handlers when renderUpdateState re-renders. */
+  private setupUpdateStatusActions(): void {
+    const status = document.getElementById('updateStatus');
+    if (!status || status.dataset.actionsBound === '1') return;
+    status.dataset.actionsBound = '1';
+
+    status.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+
+      switch (target.id) {
+        case 'downloadUpdateBtn':
+          void window.electronAPI.downloadUpdate();
+          break;
+        case 'updateLaterBtn':
+          status.classList.remove('visible');
+          break;
+        case 'installUpdateBtn':
+          void window.electronAPI.installUpdate();
+          break;
+        case 'installLaterBtn':
+          status.classList.remove('visible');
+          showToast('The update will install when you close the app.', 'success');
+          break;
+      }
+    });
+  }
+
   private renderUpdateState(state: UpdateState): void {
     const status = document.getElementById('updateStatus');
     const progressContainer = document.getElementById('updateProgressContainer') as HTMLElement | null;
@@ -725,27 +784,25 @@ class DPDaysCounter {
         status.classList.add('visible');
         return;
 
-      case 'not-available':
-        status.textContent = `You are on the latest version${state.version ? ' (v' + state.version + ')' : ''}.`;
+      case 'not-available': {
+        const versionSuffix = state.version
+          ? ` (v${this.escapeHtml(state.version)})`
+          : '';
+        status.textContent = `You are on the latest version${versionSuffix}.`;
         status.classList.add('visible');
         return;
+      }
 
       case 'available':
         status.innerHTML = `
-          <div><strong>Version ${state.version ?? '?'}</strong> is available.</div>
+          <div><strong>Version ${this.escapeHtml(state.version ?? '?')}</strong> is available.</div>
           ${state.releaseNotes ? `<div style="margin-top:6px;">${this.escapeHtml(state.releaseNotes)}</div>` : ''}
           <div style="margin-top:10px;display:flex;gap:8px;">
-            <button class="modal-btn save-btn" id="downloadUpdateBtn">Download</button>
-            <button class="modal-btn cancel-btn" id="updateLaterBtn">Later</button>
+            <button type="button" class="modal-btn save-btn" id="downloadUpdateBtn">Download</button>
+            <button type="button" class="modal-btn cancel-btn" id="updateLaterBtn">Later</button>
           </div>
         `;
         status.classList.add('visible');
-        document.getElementById('downloadUpdateBtn')?.addEventListener('click', () => {
-          void window.electronAPI.downloadUpdate();
-        });
-        document.getElementById('updateLaterBtn')?.addEventListener('click', () => {
-          status.classList.remove('visible');
-        });
         return;
 
       case 'downloading':
@@ -762,27 +819,26 @@ class DPDaysCounter {
         status.innerHTML = `
           <div>Update <strong>v${this.escapeHtml(state.version ?? '')}</strong> is ready to install.</div>
           <div style="margin-top:10px;display:flex;gap:8px;">
-            <button class="modal-btn save-btn" id="installUpdateBtn">Install &amp; Restart</button>
-            <button class="modal-btn cancel-btn" id="installLaterBtn">On Next Quit</button>
+            <button type="button" class="modal-btn save-btn" id="installUpdateBtn">Install &amp; Restart</button>
+            <button type="button" class="modal-btn cancel-btn" id="installLaterBtn">On Next Quit</button>
           </div>
         `;
         status.classList.add('visible');
         if (checkBtn) checkBtn.disabled = false;
-        document.getElementById('installUpdateBtn')?.addEventListener('click', () => {
-          void window.electronAPI.installUpdate();
-        });
-        document.getElementById('installLaterBtn')?.addEventListener('click', () => {
-          status.classList.remove('visible');
-          showToast('The update will install when you close the app.', 'success');
-        });
         return;
 
       case 'error':
-        status.textContent = `Update failed: ${state.errorMessage ?? 'unknown error'}`;
+        status.textContent = `Update failed: ${this.formatUpdateError(state.errorMessage)}`;
         status.classList.add('visible', 'error');
         if (checkBtn) checkBtn.disabled = false;
         return;
     }
+  }
+
+  private formatUpdateError(message?: string): string {
+    if (!message) return 'unknown error';
+    const plain = message.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    return plain.length > 160 ? `${plain.slice(0, 157)}...` : plain;
   }
 
   private escapeHtml(value: string): string {

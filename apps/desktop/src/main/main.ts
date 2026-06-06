@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, IpcMainInvokeEvent, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import log from 'electron-log';
@@ -7,47 +7,112 @@ import {
   DPDays,
   WINDOW_STATE_CHANNEL,
   isValidDpDays,
-  isValidSettings
+  isValidSettings,
+  sanitizeDpDays
 } from './shared-types';
-import { UpdaterService } from './updater';
+import { getUpdaterService } from './updater';
 
-// File logger: writes to %APPDATA%\DP Days Counter\logs\main.log on Windows.
-// Useful for diagnosing first-run issues that users can email back to us.
 log.transports.file.level = 'info';
 log.transports.console.level = 'info';
-log.info(`Starting DP Days Counter ${app.getVersion()} on ${process.platform}`);
 
 let mainWindow: BrowserWindow | null = null;
-let updater: UpdaterService | null = null;
-
-const userDataPath = app.getPath('userData');
-const dpDaysFile = path.join(userDataPath, 'dp_days.json');
-const settingsFile = path.join(userDataPath, 'settings.json');
+let dpDaysFile = '';
+let settingsFile = '';
 
 /** Background colour used everywhere to prevent paint flashes during navigation. */
 const BACKGROUND_COLOR = '#0a0a0a';
 
-if (!fs.existsSync(userDataPath)) {
-  fs.mkdirSync(userDataPath, { recursive: true });
+/** Minimum window size tuned for 1366×768 laptops on Windows 10/11. */
+const MIN_WINDOW_WIDTH = 1024;
+const MIN_WINDOW_HEIGHT = 640;
+
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  });
+}
+
+function initStoragePaths(): void {
+  const userDataPath = app.getPath('userData');
+  if (!fs.existsSync(userDataPath)) {
+    fs.mkdirSync(userDataPath, { recursive: true });
+  }
+  dpDaysFile = path.join(userDataPath, 'dp_days.json');
+  settingsFile = path.join(userDataPath, 'settings.json');
+
+  const logsDir = path.join(userDataPath, 'logs');
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+  const logFile = path.join(logsDir, 'main.log');
+  log.transports.file.resolvePathFn = () => logFile;
+
+  log.info(`User data directory: ${userDataPath}`);
+  log.info(`Log file: ${logFile}`);
+}
+
+function isTrustedRenderer(event: IpcMainInvokeEvent): boolean {
+  if (!mainWindow || mainWindow.isDestroyed()) return false;
+  return event.sender.id === mainWindow.webContents.id;
+}
+
+/** Whitelist http(s) URLs before handing them to the OS shell. */
+function openHttpUrl(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+  shell.openExternal(parsed.toString()).catch((err) => log.error('openExternal failed:', err));
+  return true;
 }
 
 /**
- * Read a JSON file with a typed validator. On any error or invalid payload
- * returns the supplied fallback so corrupted state cannot crash the app.
+ * Load DP days with per-key sanitization so one corrupt entry cannot wipe years of data.
+ * Automatically repairs the on-disk file when invalid keys are stripped.
  */
-function readJsonSafe<T>(filePath: string, validate: (value: unknown) => value is T, fallback: T): T {
+function loadDpDays(): DPDays {
+  try {
+    if (!fs.existsSync(dpDaysFile)) return {};
+    const raw = fs.readFileSync(dpDaysFile, 'utf8');
+    const parsed: unknown = JSON.parse(raw);
+    if (isValidDpDays(parsed)) return parsed;
+
+    const sanitized = sanitizeDpDays(parsed);
+    log.warn('Repaired invalid entries in dp_days.json');
+    writeJsonSafe(dpDaysFile, sanitized);
+    return sanitized;
+  } catch (error) {
+    log.error('Failed to load dp_days.json:', error);
+    return {};
+  }
+}
+
+function readJsonSafe<T>(
+  filePath: string,
+  validate: (value: unknown) => value is T,
+  fallback: T
+): T {
   try {
     if (!fs.existsSync(filePath)) return fallback;
     const raw = fs.readFileSync(filePath, 'utf8');
     const parsed: unknown = JSON.parse(raw);
     return validate(parsed) ? parsed : fallback;
   } catch (error) {
-    console.error(`Failed to read ${filePath}:`, error);
+    log.error(`Failed to read ${filePath}:`, error);
     return fallback;
   }
 }
 
-/** Atomic-ish write: write to a temp file then rename, to avoid half-written JSON. */
+/** Atomic-ish write: temp file + rename avoids half-written JSON on crash. */
 function writeJsonSafe(filePath: string, data: unknown): boolean {
   try {
     const tmp = `${filePath}.tmp`;
@@ -55,7 +120,7 @@ function writeJsonSafe(filePath: string, data: unknown): boolean {
     fs.renameSync(tmp, filePath);
     return true;
   } catch (error) {
-    console.error(`Failed to write ${filePath}:`, error);
+    log.error(`Failed to write ${filePath}:`, error);
     return false;
   }
 }
@@ -63,9 +128,9 @@ function writeJsonSafe(filePath: string, data: unknown): boolean {
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1600,
-    height: 1200,
-    minWidth: 1200,
-    minHeight: 800,
+    height: 900,
+    minWidth: MIN_WINDOW_WIDTH,
+    minHeight: MIN_WINDOW_HEIGHT,
     frame: false,
     titleBarStyle: 'hidden',
     title: 'DP Days Counter',
@@ -75,7 +140,7 @@ function createWindow(): void {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-      backgroundThrottling: false
+      backgroundThrottling: true
     },
     icon: path.join(__dirname, '../assets/logo.ico'),
     show: false
@@ -85,7 +150,6 @@ function createWindow(): void {
   log.info(`Loading splash from ${loadingPath}`);
   mainWindow.loadFile(loadingPath).catch((err) => log.error('loadFile splash failed:', err));
 
-  // Single show, exactly when first paint is ready: no white flash, no double show.
   mainWindow.once('ready-to-show', () => {
     log.info('Main window ready-to-show');
     mainWindow?.show();
@@ -106,7 +170,6 @@ function createWindow(): void {
   mainWindow.on('unmaximize', broadcastWindowState);
   mainWindow.webContents.on('did-finish-load', () => {
     log.info(`did-finish-load url=${mainWindow?.webContents.getURL()}`);
-    // Sync the maximize button icon with the initial window state.
     broadcastWindowState();
   });
 
@@ -115,22 +178,19 @@ function createWindow(): void {
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    // Open every external link in the OS browser, never spawn a new Electron window.
-    shell.openExternal(url).catch((err) => console.error('openExternal failed:', err));
+    openHttpUrl(url);
     return { action: 'deny' };
   });
 
-  updater = new UpdaterService(() => mainWindow);
-  updater.scheduleStartupCheck();
+  getUpdaterService(() => mainWindow, settingsFile).scheduleStartupCheck();
 }
 
-ipcMain.handle('load-dp-days', async (): Promise<DPDays> => {
-  return readJsonSafe<DPDays>(dpDaysFile, isValidDpDays, {});
-});
+ipcMain.handle('load-dp-days', async (): Promise<DPDays> => loadDpDays());
 
-ipcMain.handle('save-dp-days', async (_event, data: unknown): Promise<boolean> => {
+ipcMain.handle('save-dp-days', async (event, data: unknown): Promise<boolean> => {
+  if (!isTrustedRenderer(event)) return false;
   if (!isValidDpDays(data)) {
-    console.error('save-dp-days received invalid payload');
+    log.error('save-dp-days received invalid payload');
     return false;
   }
   return writeJsonSafe(dpDaysFile, data);
@@ -140,19 +200,22 @@ ipcMain.handle('load-settings', async (): Promise<AppSettings> => {
   return readJsonSafe<AppSettings>(settingsFile, isValidSettings, { theme: 'dark' });
 });
 
-ipcMain.handle('save-settings', async (_event, data: unknown): Promise<boolean> => {
+ipcMain.handle('save-settings', async (event, data: unknown): Promise<boolean> => {
+  if (!isTrustedRenderer(event)) return false;
   if (!isValidSettings(data)) {
-    console.error('save-settings received invalid payload');
+    log.error('save-settings received invalid payload');
     return false;
   }
   return writeJsonSafe(settingsFile, data);
 });
 
-ipcMain.handle('minimize-window', () => {
+ipcMain.handle('minimize-window', (event) => {
+  if (!isTrustedRenderer(event)) return;
   mainWindow?.minimize();
 });
 
-ipcMain.handle('maximize-window', () => {
+ipcMain.handle('maximize-window', (event) => {
+  if (!isTrustedRenderer(event)) return;
   if (!mainWindow) return;
   if (mainWindow.isMaximized()) {
     mainWindow.unmaximize();
@@ -161,39 +224,27 @@ ipcMain.handle('maximize-window', () => {
   }
 });
 
-ipcMain.handle('close-window', () => {
+ipcMain.handle('close-window', (event) => {
+  if (!isTrustedRenderer(event)) return;
   mainWindow?.close();
 });
 
-ipcMain.handle('is-maximized', () => mainWindow?.isMaximized() ?? false);
+ipcMain.handle('is-maximized', (event) => {
+  if (!isTrustedRenderer(event)) return false;
+  return mainWindow?.isMaximized() ?? false;
+});
 
-ipcMain.handle('open-external', async (_event, url: unknown): Promise<boolean> => {
+ipcMain.handle('open-external', async (event, url: unknown): Promise<boolean> => {
+  if (!isTrustedRenderer(event)) return false;
   if (typeof url !== 'string') return false;
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    return false;
-  }
-  // Whitelist: http(s) only. Prevents launching arbitrary protocols (file:, mailto:, etc.)
-  // through a renderer-controlled string.
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
-  try {
-    await shell.openExternal(parsed.toString());
-    return true;
-  } catch (error) {
-    console.error('openExternal failed:', error);
-    return false;
-  }
+  return openHttpUrl(url);
 });
 
 ipcMain.handle('app-version', () => app.getVersion());
 
-// Legacy compatibility: older builds of loading.html relied on this IPC channel
-// to navigate to the main window. New builds navigate via `location.replace`,
-// so this handler is now a no-op kept only to keep older renderers working.
-ipcMain.handle('loading-complete', async () => {
-  if (!mainWindow) return;
+/** Legacy fallback if an old loading.html still calls this IPC channel. */
+ipcMain.handle('loading-complete', async (event) => {
+  if (!isTrustedRenderer(event) || !mainWindow) return;
   try {
     await mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   } catch (error) {
@@ -201,7 +252,13 @@ ipcMain.handle('loading-complete', async () => {
   }
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  if (!gotSingleInstanceLock) return;
+  log.info(`Starting DP Days Counter ${app.getVersion()} on ${process.platform}`);
+  initStoragePaths();
+  getUpdaterService(() => mainWindow, settingsFile);
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -215,10 +272,6 @@ app.on('activate', () => {
   }
 });
 
-// Hard-block any in-app navigation that escapes the file:// scheme.
-// NOTE: a file:// URL has `origin === "null"` (a literal string), not "file://",
-// so we compare on `protocol` instead — the previous version blocked legitimate
-// in-app navigation between bundled HTML pages.
 app.on('web-contents-created', (_event, contents) => {
   contents.on('will-navigate', (event, navigationUrl) => {
     try {

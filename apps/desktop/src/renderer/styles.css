@@ -1062,6 +1062,10 @@ body {
   background: var(--surface);
   display: none;
   line-height: 1.5;
+  max-height: 140px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .update-status.visible { display: block; }

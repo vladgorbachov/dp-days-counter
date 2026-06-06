@@ -32,6 +32,7 @@ export interface UpdateState {
   transferred?: number;
   total?: number;
   errorMessage?: string;
+  userInitiated?: boolean;
 }
 
 export interface WindowState {

@@ -33,6 +33,8 @@ export interface UpdateState {
   transferred?: number;
   total?: number;
   errorMessage?: string;
+  /** True when the user explicitly clicked "Check for Updates". */
+  userInitiated?: boolean;
 }
 
 export const UPDATE_EVENT_CHANNEL = 'updater:state';
@@ -50,6 +52,22 @@ export interface WindowState {
 /** Hard cap for daily DP hours (sanity check on IPC payloads). */
 export const MAX_DP_HOURS_PER_DAY = 24;
 
+/** Business rule mirrored in the renderer hours modal. */
+export const MIN_DP_HOURS_FOR_DAY = 2;
+
+const DATE_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidDateKey(key: string): boolean {
+  return DATE_KEY_RE.test(key);
+}
+
+function isValidHoursValue(raw: unknown): raw is number {
+  return typeof raw === 'number'
+    && Number.isInteger(raw)
+    && raw >= 0
+    && raw <= MAX_DP_HOURS_PER_DAY;
+}
+
 /**
  * Validate that a value looks like persisted DP days data.
  * Keys must be ISO-like YYYY-MM-DD, values integers in [0, 24].
@@ -58,13 +76,26 @@ export function isValidDpDays(value: unknown): value is DPDays {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return false;
   }
-  const dateKeyRe = /^\d{4}-\d{2}-\d{2}$/;
   for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
-    if (!dateKeyRe.test(key)) return false;
-    if (typeof raw !== 'number' || !Number.isInteger(raw)) return false;
-    if (raw < 0 || raw > MAX_DP_HOURS_PER_DAY) return false;
+    if (!isValidDateKey(key) || !isValidHoursValue(raw)) return false;
   }
   return true;
+}
+
+/**
+ * Drop invalid keys instead of discarding the entire file.
+ * Preserves legacy entries (including 1-hour days) so upgrades never wipe data.
+ */
+export function sanitizeDpDays(value: unknown): DPDays {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+  const result: DPDays = {};
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!isValidDateKey(key) || !isValidHoursValue(raw) || raw === 0) continue;
+    result[key] = raw;
+  }
+  return result;
 }
 
 /** Validate a settings payload. Unknown keys are dropped by callers. */
@@ -75,4 +106,14 @@ export function isValidSettings(value: unknown): value is AppSettings {
   if (v.lastUpdateCheck !== undefined && typeof v.lastUpdateCheck !== 'string') return false;
   if (v.autoUpdateCheck !== undefined && typeof v.autoUpdateCheck !== 'boolean') return false;
   return true;
+}
+
+/** Returns true when an automatic startup update check is due (default: weekly). */
+export function shouldAutoCheckForUpdates(settings: AppSettings, intervalDays = 7): boolean {
+  if (settings.autoUpdateCheck === false) return false;
+  if (!settings.lastUpdateCheck) return true;
+  const last = new Date(settings.lastUpdateCheck);
+  if (Number.isNaN(last.getTime())) return true;
+  const elapsedDays = (Date.now() - last.getTime()) / (1000 * 60 * 60 * 24);
+  return elapsedDays >= intervalDays;
 }
