@@ -41,6 +41,12 @@ export const UPDATE_DOWNLOAD_CHANNEL = 'updater:download';
 export const UPDATE_INSTALL_CHANNEL = 'updater:install';
 export const UPDATE_GET_STATE_CHANNEL = 'updater:get-state';
 
+export const WINDOW_STATE_CHANNEL = 'window:state';
+
+export interface WindowState {
+  isMaximized: boolean;
+}
+
 /** Hard cap for daily DP hours (sanity check on IPC payloads). */
 export const MAX_DP_HOURS_PER_DAY = 24;
 

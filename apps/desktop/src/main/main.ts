@@ -5,6 +5,7 @@ import log from 'electron-log';
 import {
   AppSettings,
   DPDays,
+  WINDOW_STATE_CHANNEL,
   isValidDpDays,
   isValidSettings
 } from './shared-types';
@@ -94,8 +95,19 @@ function createWindow(): void {
     log.error(`did-fail-load code=${code} desc=${desc} url=${url}`);
   });
 
+  const broadcastWindowState = () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    mainWindow.webContents.send(WINDOW_STATE_CHANNEL, {
+      isMaximized: mainWindow.isMaximized()
+    });
+  };
+
+  mainWindow.on('maximize', broadcastWindowState);
+  mainWindow.on('unmaximize', broadcastWindowState);
   mainWindow.webContents.on('did-finish-load', () => {
     log.info(`did-finish-load url=${mainWindow?.webContents.getURL()}`);
+    // Sync the maximize button icon with the initial window state.
+    broadcastWindowState();
   });
 
   mainWindow.on('closed', () => {

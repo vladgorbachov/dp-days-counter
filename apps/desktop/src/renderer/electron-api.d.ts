@@ -34,6 +34,10 @@ export interface UpdateState {
   errorMessage?: string;
 }
 
+export interface WindowState {
+  isMaximized: boolean;
+}
+
 export interface ElectronAPI {
   loadDPDays: () => Promise<DPDays>;
   saveDPDays: (data: DPDays) => Promise<boolean>;
@@ -44,6 +48,7 @@ export interface ElectronAPI {
   maximizeWindow: () => Promise<void>;
   closeWindow: () => Promise<void>;
   isMaximized: () => Promise<boolean>;
+  onWindowState: (listener: (state: WindowState) => void) => () => void;
 
   openExternal: (url: string) => Promise<boolean>;
   loadingComplete: () => Promise<void>;

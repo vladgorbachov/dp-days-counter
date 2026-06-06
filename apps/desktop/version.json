@@ -1,12 +1,17 @@
 {
-  "version": "2.0.1",
+  "version": "2.0.0",
   "releaseDate": "2026-06-06",
   "downloadUrl": "https://github.com/vladgorbachov/dp-days-counter/releases/latest",
   "changelog": [
-    "Hotfix: splash screen handed off to main window via direct navigation (no IPC dependency)",
-    "Hotfix: corrected file:// navigation guard that could block legitimate in-app navigation on some Windows setups",
-    "Added electron-log file logging for first-run diagnostics (%APPDATA%/DP Days Counter/logs/main.log)",
-    "Belt-and-braces fallback inside the splash screen if the initial handoff fails"
+    "Automatic in-app updates via electron-updater (download + install on confirmation)",
+    "Brand-new black-and-gold dark theme",
+    "Brand-new white-and-purple light theme",
+    "Eliminated startup flicker; loading screen finishes twice as fast",
+    "Week now starts on Monday across calendar and date pickers",
+    "Local Orbitron font (no Google Fonts CDN, no FOUT)",
+    "Switched update version source to app.getVersion() (no hardcoded constants)",
+    "Hardened IPC validation and removed dead/unused dependencies",
+    "Inline modal notifications replace blocking alert() dialogs"
   ],
   "minVersion": "1.0.0",
   "forceUpdate": false

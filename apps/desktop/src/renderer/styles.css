@@ -257,6 +257,11 @@ body {
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s, color 0.2s;
+  /* Belt-and-braces: the parent .title-bar-right already opts out of the
+     drag region, but some Chromium versions don't propagate -webkit-app-region
+     consistently. Explicitly mark every button as no-drag so clicks always go
+     to the button, not the window drag handler. */
+  -webkit-app-region: no-drag;
 }
 
 .title-bar-btn:hover {

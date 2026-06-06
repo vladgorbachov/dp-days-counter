@@ -1,4 +1,4 @@
-import type { AppSettings, DPDays, UpdateState } from './electron-api';
+import type { AppSettings, DPDays, UpdateState, WindowState } from './electron-api';
 
 interface CalendarDay {
   date: string;
@@ -91,6 +91,7 @@ class DPDaysCounter {
   private startDate: Date | null = null;
   private endDate: Date | null = null;
   private updateUnsubscribe: (() => void) | null = null;
+  private windowStateUnsubscribe: (() => void) | null = null;
   private contextMenuField: 'start' | 'end' | null = null;
   private outsideClickHandler: ((event: MouseEvent) => void) | null = null;
 
@@ -104,9 +105,11 @@ class DPDaysCounter {
     this.applyTheme();
     this.setupEventListeners();
     this.subscribeToUpdates();
+    this.subscribeToWindowState();
     this.renderCalendar();
     this.updateSummary();
     void this.populateAppVersion();
+    void this.syncInitialMaximizedState();
 
     requestAnimationFrame(() => {
       document.body.classList.add('ready');
@@ -631,6 +634,45 @@ class DPDaysCounter {
     this.updateUnsubscribe = window.electronAPI.onUpdateState((state) => {
       this.renderUpdateState(state);
     });
+  }
+
+  private subscribeToWindowState(): void {
+    if (typeof window.electronAPI?.onWindowState !== 'function') return;
+    if (this.windowStateUnsubscribe) this.windowStateUnsubscribe();
+    this.windowStateUnsubscribe = window.electronAPI.onWindowState((state) => {
+      this.applyWindowState(state);
+    });
+  }
+
+  private async syncInitialMaximizedState(): Promise<void> {
+    if (typeof window.electronAPI?.isMaximized !== 'function') return;
+    try {
+      const isMaximized = await window.electronAPI.isMaximized();
+      this.applyWindowState({ isMaximized });
+    } catch (error) {
+      console.error('Failed to read initial maximized state:', error);
+    }
+  }
+
+  /**
+   * Update the maximize button glyph and ARIA label depending on whether the
+   * window is currently maximized. Glyphs are box-drawing characters that
+   * mirror Windows' own title bar:
+   *   - 🗖 (U+1F5D6)  "maximize"
+   *   - 🗗 (U+1F5D7)  "restore down"
+   */
+  private applyWindowState(state: WindowState): void {
+    const btn = document.getElementById('maximizeBtn');
+    if (!btn) return;
+    if (state.isMaximized) {
+      btn.textContent = '\u{1F5D7}';
+      btn.setAttribute('aria-label', 'Restore');
+      btn.setAttribute('title', 'Restore');
+    } else {
+      btn.textContent = '\u{1F5D6}';
+      btn.setAttribute('aria-label', 'Maximize');
+      btn.setAttribute('title', 'Maximize');
+    }
   }
 
   private async handleCheckForUpdates(): Promise<void> {
